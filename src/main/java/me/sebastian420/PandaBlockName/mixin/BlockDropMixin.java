@@ -22,7 +22,6 @@ public class BlockDropMixin {
     @Inject(method = "getDroppedStacks", at = @At(value = "TAIL"), cancellable = true)
     private void getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder, CallbackInfoReturnable<List<ItemStack>> cir) {
         BlockEntity blockEntity = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
-
         if (blockEntity != null) {
             if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
                     List<ItemStack> items = cir.getReturnValue();

@@ -5,6 +5,8 @@
 	"mixins": [
 		"BlockDropMixin",
 		"BlockPlaceMixin",
+		"PistonBlockEntityAccessor",
+		"PistonBlockEntityMixin",
 		"WorldChunkMixin"
 	],
 	"injectors": {

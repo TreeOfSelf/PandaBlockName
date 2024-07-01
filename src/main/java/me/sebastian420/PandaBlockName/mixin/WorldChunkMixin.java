@@ -1,5 +1,6 @@
 package me.sebastian420.PandaBlockName.mixin;
 
+import me.sebastian420.PandaBlockName.EmptyBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
@@ -27,48 +28,49 @@ public abstract class WorldChunkMixin {
     public void setBlockEntity(BlockEntity blockEntity, CallbackInfo ci) {
 
 
+        if (blockEntity instanceof EmptyBlockEntity) {
+            BlockPos blockPos = blockEntity.getPos();
 
-        BlockPos blockPos = blockEntity.getPos();
+            BlockState blockState = this.getBlockState(blockPos);
+            if (!blockState.hasBlockEntity()) {
+                blockEntity.setCachedState(blockState);
 
-        BlockState blockState = this.getBlockState(blockPos);
-        if (!blockState.hasBlockEntity()) {
-            blockEntity.setCachedState(blockState);
-
-            blockEntity.setWorld(this.world);
-            blockEntity.cancelRemoval();
-            BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
-            if (blockEntity2 != null && blockEntity2 != blockEntity) {
-                blockEntity2.markRemoved();
-            }
-            ci.cancel();
-            return;
-        } else {
-            BlockState blockState2 = blockEntity.getCachedState();
-            if (blockState != blockState2) {
-                if (!blockEntity.getType().supports(blockState)) {
-                    blockEntity.setCachedState(blockState);
-
-                    blockEntity.setWorld(this.world);
-                    blockEntity.cancelRemoval();
-                    BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
-                    if (blockEntity2 != null && blockEntity2 != blockEntity) {
-                        blockEntity2.markRemoved();
-                    }
-                    ci.cancel();
-                    return;
+                blockEntity.setWorld(this.world);
+                blockEntity.cancelRemoval();
+                BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
+                if (blockEntity2 != null && blockEntity2 != blockEntity) {
+                    blockEntity2.markRemoved();
                 }
+                ci.cancel();
+                return;
+            } else {
+                BlockState blockState2 = blockEntity.getCachedState();
+                if (blockState != blockState2) {
+                    if (!blockEntity.getType().supports(blockState)) {
+                        blockEntity.setCachedState(blockState);
 
-                if (blockState.getBlock() != blockState2.getBlock()) {
-                    blockEntity.setCachedState(blockState);
-
-                    blockEntity.setWorld(this.world);
-                    blockEntity.cancelRemoval();
-                    BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
-                    if (blockEntity2 != null && blockEntity2 != blockEntity) {
-                        blockEntity2.markRemoved();
+                        blockEntity.setWorld(this.world);
+                        blockEntity.cancelRemoval();
+                        BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
+                        if (blockEntity2 != null && blockEntity2 != blockEntity) {
+                            blockEntity2.markRemoved();
+                        }
+                        ci.cancel();
+                        return;
                     }
-                    ci.cancel();
-                    return;
+
+                    if (blockState.getBlock() != blockState2.getBlock()) {
+                        blockEntity.setCachedState(blockState);
+
+                        blockEntity.setWorld(this.world);
+                        blockEntity.cancelRemoval();
+                        BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
+                        if (blockEntity2 != null && blockEntity2 != blockEntity) {
+                            blockEntity2.markRemoved();
+                        }
+                        ci.cancel();
+                        return;
+                    }
                 }
             }
         }
