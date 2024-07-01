@@ -4,7 +4,6 @@ import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -22,8 +21,8 @@ public class PandaBlockName implements ModInitializer {
 		EMPTY_BLOCK_ENTITY_TYPE = Registry.register(
 				Registries.BLOCK_ENTITY_TYPE,
 				Identifier.of("panda-block-name", "emptyblock"),
-				FabricBlockEntityTypeBuilder.create(EmptyBlockEntity::new, Blocks.BARRIER).build(null)
-		);
+				FabricBlockEntityTypeBuilder.create(EmptyBlockEntity::new).build(null));
+
 
 		PolymerBlockUtils.registerBlockEntity(EMPTY_BLOCK_ENTITY_TYPE);
 

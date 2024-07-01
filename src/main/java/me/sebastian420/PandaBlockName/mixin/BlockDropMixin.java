@@ -6,9 +6,6 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,11 +20,18 @@ public class BlockDropMixin {
     private void getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder, CallbackInfoReturnable<List<ItemStack>> cir) {
         BlockEntity blockEntity = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
         if (blockEntity != null) {
+
             if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
                     List<ItemStack> items = cir.getReturnValue();
                     for (ItemStack item : items) {
                         item.set(DataComponentTypes.CUSTOM_NAME,  blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME));
                     }
+            }
+            if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
+                List<ItemStack> items = cir.getReturnValue();
+                for (ItemStack item : items) {
+                    item.set(DataComponentTypes.LORE,  blockEntity.getComponents().get(DataComponentTypes.LORE));
+                }
             }
         }
     }
