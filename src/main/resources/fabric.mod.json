@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "panda-block-name",
+	"version": "${version}",
+	"name": "panda-block-name",
+	"description": "Save custom names on blocks when placing and breaking them.",
+	"authors": [
+		"Sebastian420"
+	],
+	"contact": {
+		"homepage": "",
+		"sources": ""
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/panda-block-name/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"me.sebastian420.PandaBlockName.PandaBlockName"
+		]
+	},
+	"mixins": [
+		"panda-block-name.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.21",
+		"java": ">=21"	,
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
