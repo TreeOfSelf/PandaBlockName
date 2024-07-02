@@ -38,6 +38,8 @@ public class BlockDropMixin {
                     item.set(DataComponentTypes.LORE,  blockEntity.getComponents().get(DataComponentTypes.LORE));
                 }
             }
+
+            builder.getWorld().removeBlockEntity(blockEntity.getPos());
         }
     }
 }
