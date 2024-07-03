@@ -5,6 +5,9 @@
   "mixins": [
     "BlockDropMixin",
     "BlockPlaceMixin",
+    "EndermanEntityMixin",
+    "EndermanPickUpMixin",
+    "EndermanPlaceMixin",
     "PistonBlockEntityMixin",
     "PistonBlockMixin",
     "WorldChunkMixin"
