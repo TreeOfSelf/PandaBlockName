@@ -38,12 +38,11 @@ public abstract class WorldChunkMixin {
 
                 blockEntity.setWorld(this.world);
                 blockEntity.cancelRemoval();
-                BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
+                BlockEntity blockEntity2 = this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
                 if (blockEntity2 != null && blockEntity2 != blockEntity) {
                     blockEntity2.markRemoved();
                 }
                 ci.cancel();
-                return;
             } else {
                 BlockState blockState2 = blockEntity.getCachedState();
                 if (blockState != blockState2) {
@@ -52,7 +51,7 @@ public abstract class WorldChunkMixin {
 
                         blockEntity.setWorld(this.world);
                         blockEntity.cancelRemoval();
-                        BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
+                        BlockEntity blockEntity2 = this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
                         if (blockEntity2 != null && blockEntity2 != blockEntity) {
                             blockEntity2.markRemoved();
                         }
@@ -65,12 +64,11 @@ public abstract class WorldChunkMixin {
 
                         blockEntity.setWorld(this.world);
                         blockEntity.cancelRemoval();
-                        BlockEntity blockEntity2 = (BlockEntity) this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
+                        BlockEntity blockEntity2 = this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);
                         if (blockEntity2 != null && blockEntity2 != blockEntity) {
                             blockEntity2.markRemoved();
                         }
                         ci.cancel();
-                        return;
                     }
                 }
             }
