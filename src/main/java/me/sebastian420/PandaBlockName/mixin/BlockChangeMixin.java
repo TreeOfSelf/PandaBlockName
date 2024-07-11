@@ -1,8 +1,10 @@
 package me.sebastian420.PandaBlockName.mixin;
 
+import me.sebastian420.PandaBlockName.EmptyBlockEntity;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,6 +22,9 @@ public abstract class BlockChangeMixin {
 
     @Inject(method = "onStateReplaced", at = @At("HEAD"))
     private void onStateReplacedInject(World world, BlockPos pos, BlockState state, boolean moved, CallbackInfo info) {
-        if (this.asBlockState().getBlock() != state.getBlock()) world.removeBlockEntity(pos);
+        if (this.asBlockState().getBlock() != state.getBlock()) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof EmptyBlockEntity)  world.removeBlockEntity(pos);
+        }
     }
 }

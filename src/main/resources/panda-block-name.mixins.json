@@ -6,6 +6,7 @@
     "BlockChangeMixin",
     "BlockDropMixin",
     "BlockPlaceMixin",
+    "CraftingScreenHandlerMixin",
     "EndermanEntityMixin",
     "EndermanPickUpMixin",
     "EndermanPlaceMixin",

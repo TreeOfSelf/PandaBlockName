@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -58,7 +59,7 @@ public class BlockDropMixin {
         if (add) list.add(itemStack);
     }
 
-    @Inject(method = "getDroppedStacks", at = @At(value = "TAIL"), cancellable = true)
+    @Inject(method = "getDroppedStacks", at = @At(value = "TAIL"))
     private void getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder, CallbackInfoReturnable<List<ItemStack>> cir) {
 
         World world = builder.getWorld();
@@ -69,6 +70,10 @@ public class BlockDropMixin {
         if (blockEntity != null) {
 
             int itemIndex = 1;
+            boolean notMultiple = !state.contains(Properties.PICKLES) &&
+                    !state.contains(Properties.CANDLES) &&
+                    !state.contains(Properties.LAYERS) &&
+                    !state.contains(Properties.SLAB_TYPE);
 
             NbtCompound customData = null;
             if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA))
@@ -81,7 +86,7 @@ public class BlockDropMixin {
             for (ItemStack item : items) {
                 while (item.getCount() > 0) {
                     //First item
-                    if (itemIndex == 1) {
+                    if (itemIndex == 1 || notMultiple){
                         ItemStack newItem = null;
                         boolean newItemChanged = false;
                         if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
