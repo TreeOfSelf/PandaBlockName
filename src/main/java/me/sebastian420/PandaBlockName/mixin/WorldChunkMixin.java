@@ -27,15 +27,11 @@ public abstract class WorldChunkMixin {
 
     @Inject(at = @At("HEAD"), method = "setBlockEntity", cancellable = true)
     public void setBlockEntity(BlockEntity blockEntity, CallbackInfo ci) {
-
-
         if (blockEntity instanceof EmptyBlockEntity) {
             BlockPos blockPos = blockEntity.getPos();
-
             BlockState blockState = this.getBlockState(blockPos);
             if (!blockState.hasBlockEntity()) {
                 blockEntity.setCachedState(blockState);
-
                 blockEntity.setWorld(this.world);
                 blockEntity.cancelRemoval();
                 BlockEntity blockEntity2 = this.getBlockEntities().put(blockPos.toImmutable(), blockEntity);

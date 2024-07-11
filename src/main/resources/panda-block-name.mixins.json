@@ -3,8 +3,8 @@
   "package": "me.sebastian420.PandaBlockName.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BlockChangeMixin",
     "BlockDropMixin",
-    "BlockItemMixin",
     "BlockPlaceMixin",
     "EndermanEntityMixin",
     "EndermanPickUpMixin",
