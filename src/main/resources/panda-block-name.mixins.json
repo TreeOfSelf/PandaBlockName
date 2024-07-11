@@ -12,6 +12,7 @@
     "EndermanPlaceMixin",
     "PistonBlockEntityMixin",
     "PistonBlockMixin",
+    "PlantGrowMixin",
     "WorldChunkMixin"
   ],
   "injectors": {

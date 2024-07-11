@@ -47,6 +47,7 @@ public class BlockDropMixin {
 
     @Unique
     private void addOrCombine(List<ItemStack> list, ItemStack itemStack) {
+
         boolean add = true;
         for (ItemStack item : list) {
             if (item.getComponents().equals(itemStack.getComponents())) {
@@ -69,71 +70,90 @@ public class BlockDropMixin {
         }
         if (blockEntity != null) {
 
-            int itemIndex = 1;
-            boolean notMultiple = !state.contains(Properties.PICKLES) &&
-                    !state.contains(Properties.CANDLES) &&
-                    !state.contains(Properties.LAYERS) &&
-                    !state.contains(Properties.SLAB_TYPE);
+            boolean multiple = state.contains(Properties.PICKLES) ||
+                    state.contains(Properties.CANDLES) ||
+                    state.contains(Properties.LAYERS) ||
+                    state.contains(Properties.SLAB_TYPE);
 
-            NbtCompound customData = null;
-            if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA))
-                customData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+            //Multiple
+            if (multiple) {
 
-            List<ItemStack> items = cir.getReturnValue();
-            List<ItemStack> additionalItems = new ArrayList<>();
+                int itemIndex = 1;
 
-            outerLoop:
-            for (ItemStack item : items) {
-                while (item.getCount() > 0) {
-                    //First item
-                    if (itemIndex == 1 || notMultiple){
-                        ItemStack newItem = null;
-                        boolean newItemChanged = false;
-                        if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
-                            newItem = item.copyWithCount(1);
-                            newItem.set(DataComponentTypes.CUSTOM_NAME, blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME));
-                            newItemChanged = true;
-                        }
-                        if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
-                            if (newItem == null) newItem = item.copyWithCount(1);
-                            newItem.set(DataComponentTypes.LORE, blockEntity.getComponents().get(DataComponentTypes.LORE));
-                            newItemChanged = true;
-                        }
-                        if (newItemChanged) {
-                            item.decrement(1);
-                            addOrCombine(additionalItems, newItem);
-                            if (item.getCount()==0) items.remove(item);
-                        }
-                        //Non first-item
-                    } else {
-                        if (customData == null) break outerLoop;
-                        ItemStack newItem = null;
-                        boolean newItemChanged = false;
-                        ItemData itemData = getItemData(world, customData, itemIndex);
-                        if (itemData.CustomName != null) {
-                            newItem = item.copyWithCount(1);
-                            newItem.set(DataComponentTypes.CUSTOM_NAME, itemData.CustomName);
-                            newItemChanged = true;
-                        }
-                        if (itemData.Lore != null) {
-                            if (newItem == null) newItem = item.copyWithCount(1);
-                            newItem.set(DataComponentTypes.LORE, itemData.Lore);
-                            newItemChanged = true;
-                        }
-                        if (newItemChanged) {
-                            item.decrement(1);
-                            addOrCombine(additionalItems, newItem);
-                            if (item.getCount()==0) items.remove(item);
+                NbtCompound customData = null;
+                if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA))
+                    customData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+
+                List<ItemStack> items = cir.getReturnValue();
+                List<ItemStack> additionalItems = new ArrayList<>();
+
+                outerLoop:
+                for (ItemStack item : items) {
+                    while (item.getCount() > 0) {
+                        //First item
+                        if (itemIndex == 1) {
+                            ItemStack newItem = null;
+                            boolean newItemChanged = false;
+                            if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
+                                newItem = item.copyWithCount(1);
+                                newItem.set(DataComponentTypes.CUSTOM_NAME, blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME));
+                                newItemChanged = true;
+                            }
+                            if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
+                                if (newItem == null) newItem = item.copyWithCount(1);
+                                newItem.set(DataComponentTypes.LORE, blockEntity.getComponents().get(DataComponentTypes.LORE));
+                                newItemChanged = true;
+                            }
+                            if (newItemChanged) {
+                                item.decrement(1);
+                                addOrCombine(additionalItems, newItem);
+                                if (item.getCount() == 0) items.remove(item);
+                            }
+                            //Non first-item
                         } else {
-                            break outerLoop;
+                            if (customData == null) break outerLoop;
+                            ItemStack newItem = null;
+                            boolean newItemChanged = false;
+                            ItemData itemData = getItemData(world, customData, itemIndex);
+                            if (itemData.CustomName != null) {
+                                newItem = item.copyWithCount(1);
+                                newItem.set(DataComponentTypes.CUSTOM_NAME, itemData.CustomName);
+                                newItemChanged = true;
+                            }
+                            if (itemData.Lore != null) {
+                                if (newItem == null) newItem = item.copyWithCount(1);
+                                newItem.set(DataComponentTypes.LORE, itemData.Lore);
+                                newItemChanged = true;
+                            }
+                            if (newItemChanged) {
+                                item.decrement(1);
+                                addOrCombine(additionalItems, newItem);
+                                if (item.getCount() == 0) items.remove(item);
+                            } else {
+                                break outerLoop;
+                            }
                         }
+                        itemIndex++;
                     }
-                    itemIndex++;
+                }
+
+                items.addAll(additionalItems);
+
+            //Single
+            } else {
+                List<ItemStack> items = cir.getReturnValue();
+
+                if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
+                    for (ItemStack item : items) {
+                        item.set(DataComponentTypes.CUSTOM_NAME,  blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME));
+                    }
+                }
+                if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
+                    for (ItemStack item : items) {
+                        item.set(DataComponentTypes.LORE,  blockEntity.getComponents().get(DataComponentTypes.LORE));
+                    }
                 }
             }
-
-            items.addAll(additionalItems);
-
             world.removeBlockEntity(blockEntity.getPos());
         }
     }
