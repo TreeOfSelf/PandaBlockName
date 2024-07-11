@@ -13,6 +13,7 @@
     "PistonBlockEntityMixin",
     "PistonBlockMixin",
     "PlantGrowMixin",
+    "VineGrowMixin",
     "WorldChunkMixin"
   ],
   "injectors": {

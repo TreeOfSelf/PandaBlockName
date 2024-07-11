@@ -20,12 +20,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PlantGrowMixin {
     @Shadow @Final public static IntProperty AGE;
 
-    @Inject(method = "grow", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z"))
+    @Inject(method = "grow", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z"))
     public void grow(ServerWorld world, Random random, BlockPos pos, BlockState state, CallbackInfo ci,
                      @Local(ordinal = 0, argsOnly = true) BlockPos blockPos,
-                     @Local(ordinal=0) int i) {
+                     @Local(ordinal = 0) int i) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity != null && blockEntity instanceof EmptyBlockEntity) {
+        if (blockEntity instanceof EmptyBlockEntity) {
             world.addBlockEntity(new EmptyBlockEntity(blockPos,state.with(AGE, i)));
             world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
         }
