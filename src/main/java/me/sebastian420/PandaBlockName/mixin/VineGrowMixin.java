@@ -29,7 +29,7 @@ public abstract class VineGrowMixin {
     protected void randomTickOne(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
                            @Local(ordinal = 1) BlockPos blockPos,
                            @Local(ordinal = 1) Direction direction2) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        BlockEntity blockEntity = world.getBlockEntity(blockPos);
         if (blockEntity instanceof EmptyBlockEntity) {
             world.addBlockEntity(new EmptyBlockEntity(blockPos,(BlockState) Blocks.VINE.getDefaultState().with(getFacingProperty(direction2), true)));
             world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
@@ -40,7 +40,7 @@ public abstract class VineGrowMixin {
     protected void randomTickTwo(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
                                  @Local(ordinal = 1) BlockPos blockPos,
                                  @Local(ordinal = 2) Direction direction3) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        BlockEntity blockEntity = world.getBlockEntity(blockPos);
         if (blockEntity instanceof EmptyBlockEntity) {
             world.addBlockEntity(new EmptyBlockEntity(blockPos,(BlockState) Blocks.VINE.getDefaultState().with(getFacingProperty(direction3), true)));
             world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
@@ -51,7 +51,7 @@ public abstract class VineGrowMixin {
     protected void randomTickThree(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
                                  @Local(ordinal = 2) BlockPos blockPos,
                                  @Local(ordinal = 3) Direction direction4) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        BlockEntity blockEntity = world.getBlockEntity(blockPos);
         if (blockEntity instanceof EmptyBlockEntity) {
             world.addBlockEntity(new EmptyBlockEntity(blockPos,(BlockState) Blocks.VINE.getDefaultState().with(getFacingProperty(direction4), true)));
             world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
@@ -62,7 +62,7 @@ public abstract class VineGrowMixin {
     protected void randomTickFour(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
                                    @Local(ordinal = 3) BlockPos blockPos,
                                    @Local(ordinal = 3) Direction direction4) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        BlockEntity blockEntity = world.getBlockEntity(blockPos);
         if (blockEntity instanceof EmptyBlockEntity) {
             world.addBlockEntity(new EmptyBlockEntity(blockPos,(BlockState) Blocks.VINE.getDefaultState().with(getFacingProperty(direction4), true)));
             world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
@@ -72,7 +72,7 @@ public abstract class VineGrowMixin {
     @Inject(method = "randomTick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 4))
     protected void randomTickFive(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
                                  @Local(ordinal = 1) BlockPos blockPos) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        BlockEntity blockEntity = world.getBlockEntity(blockPos);
         if (blockEntity instanceof EmptyBlockEntity) {
             world.addBlockEntity(new EmptyBlockEntity(blockPos,(BlockState) Blocks.VINE.getDefaultState().with(UP, true)));
             world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());

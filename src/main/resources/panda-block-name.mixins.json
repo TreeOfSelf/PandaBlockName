@@ -13,6 +13,7 @@
     "PistonBlockEntityMixin",
     "PistonBlockMixin",
     "PlantGrowMixin",
+    "SaplingGrowMixin",
     "VineGrowMixin",
     "WorldChunkMixin"
   ],
