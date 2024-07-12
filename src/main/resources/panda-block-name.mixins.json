@@ -3,6 +3,7 @@
   "package": "me.sebastian420.PandaBlockName.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BambooGrowMixin",
     "BlockChangeMixin",
     "BlockDropMixin",
     "BlockPlaceMixin",
