@@ -12,6 +12,7 @@
     "EndermanEntityMixin",
     "EndermanPickUpMixin",
     "EndermanPlaceMixin",
+    "HugeBrownMushroomGrowMixin",
     "HugeFungusGrowMixin",
     "HugeRedMushroomGrowMixin",
     "MushroomGrowMixin",
