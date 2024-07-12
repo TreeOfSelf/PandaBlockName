@@ -2,77 +2,56 @@ package me.sebastian420.PandaBlockName.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import me.sebastian420.PandaBlockName.EmptyBlockEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SaplingGenerator;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.World;
+import net.minecraft.world.gen.feature.TreeFeature;
+import net.minecraft.world.gen.feature.TreeFeatureConfig;
+import net.minecraft.world.gen.feature.util.FeatureContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Set;
 
-@Mixin(SaplingGenerator.class)
+@Mixin(TreeFeature.class)
 public class SaplingGrowMixin {
-    @Inject(method = "generate", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 4))
-    public void generateOne(ServerWorld world, ChunkGenerator chunkGenerator, BlockPos pos, BlockState state, Random random, CallbackInfoReturnable<Boolean> cir,
-                            @Local(ordinal = 0) int i,
-                            @Local(ordinal = 1) int j) {
-        BlockPos blockPos = pos.add(i, 0, j);
-        BlockEntity blockEntity = world.getBlockEntity(blockPos);
+
+
+    @Inject(method = "generate(Lnet/minecraft/world/gen/feature/util/FeatureContext;)Z", at = @At(value = "RETURN", ordinal = 1), cancellable = true)
+    public final void generate(FeatureContext<TreeFeatureConfig> context, CallbackInfoReturnable<Boolean> cir,
+                               @Local(ordinal = 0) StructureWorldAccess structureWorldAccess,
+                               @Local(ordinal = 0) Set<BlockPos> set1,
+                               @Local(ordinal = 1) Set<BlockPos> set2,
+                               @Local(ordinal = 2) Set<BlockPos> set3,
+                               @Local(ordinal = 3) Set<BlockPos> set4) {
+
+        World world = (World) structureWorldAccess;
+        BlockEntity blockEntity = world.getBlockEntity(context.getOrigin());
+
         if (blockEntity instanceof EmptyBlockEntity) {
-            world.addBlockEntity(new EmptyBlockEntity(blockPos,state));
-            world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
+            for (BlockPos pos : set1) {
+                world.addBlockEntity(new EmptyBlockEntity(pos,world.getBlockState(pos)));
+                world.getBlockEntity(pos).setComponents(blockEntity.getComponents());
+            }
+            for (BlockPos pos : set2) {
+                world.addBlockEntity(new EmptyBlockEntity(pos,world.getBlockState(pos)));
+                world.getBlockEntity(pos).setComponents(blockEntity.getComponents());
+            }
+            for (BlockPos pos : set3) {
+                world.addBlockEntity(new EmptyBlockEntity(pos,world.getBlockState(pos)));
+                world.getBlockEntity(pos).setComponents(blockEntity.getComponents());
+            }
+            for (BlockPos pos : set4) {
+                world.addBlockEntity(new EmptyBlockEntity(pos,world.getBlockState(pos)));
+                world.getBlockEntity(pos).setComponents(blockEntity.getComponents());
+            }
         }
+
     }
 
-    @Inject(method = "generate", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 5))
-    public void generateTwo(ServerWorld world, ChunkGenerator chunkGenerator, BlockPos pos, BlockState state, Random random, CallbackInfoReturnable<Boolean> cir,
-                            @Local(ordinal = 0) int i,
-                            @Local(ordinal = 1) int j) {
-        BlockPos blockPos = pos.add(i + 1, 0, j);
-        BlockEntity blockEntity = world.getBlockEntity(blockPos);
-        if (blockEntity instanceof EmptyBlockEntity) {
-            world.addBlockEntity(new EmptyBlockEntity(blockPos,state));
-            world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
-        }
-    }
 
-    @Inject(method = "generate", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 6))
-    public void generateThree(ServerWorld world, ChunkGenerator chunkGenerator, BlockPos pos, BlockState state, Random random, CallbackInfoReturnable<Boolean> cir,
-                            @Local(ordinal = 0) int i,
-                            @Local(ordinal = 1) int j) {
-        BlockPos blockPos = pos.add(i , 0, j + 1);
-        BlockEntity blockEntity = world.getBlockEntity(blockPos);
-        if (blockEntity instanceof EmptyBlockEntity) {
-            world.addBlockEntity(new EmptyBlockEntity(blockPos,state));
-            world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
-        }
-    }
-
-    @Inject(method = "generate", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 7))
-    public void generateFour(ServerWorld world, ChunkGenerator chunkGenerator, BlockPos pos, BlockState state, Random random, CallbackInfoReturnable<Boolean> cir,
-                              @Local(ordinal = 0) int i,
-                              @Local(ordinal = 1) int j) {
-
-        BlockPos blockPos = pos.add(i + 1 , 0, j + 1);
-        BlockEntity blockEntity = world.getBlockEntity(blockPos);
-        if (blockEntity instanceof EmptyBlockEntity) {
-            world.addBlockEntity(new EmptyBlockEntity(blockPos,state));
-            world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
-        }
-    }
-
-    @Inject(method = "generate", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 9))
-    public void generateFive(ServerWorld world, ChunkGenerator chunkGenerator, BlockPos pos, BlockState state, Random random, CallbackInfoReturnable<Boolean> cir) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof EmptyBlockEntity) {
-            world.addBlockEntity(new EmptyBlockEntity(pos,state));
-            world.getBlockEntity(pos).setComponents(blockEntity.getComponents());
-        }
-    }
 }
 
