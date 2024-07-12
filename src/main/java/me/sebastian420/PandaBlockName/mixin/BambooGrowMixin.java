@@ -2,13 +2,17 @@ package me.sebastian420.PandaBlockName.mixin;
 
 import me.sebastian420.PandaBlockName.EmptyBlockEntity;
 import net.minecraft.block.BambooShootBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BambooShootBlock.class)
 public class BambooGrowMixin {
@@ -16,8 +20,9 @@ public class BambooGrowMixin {
     protected void grow(World world, BlockPos pos, CallbackInfo ci) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof EmptyBlockEntity) {
-            world.addBlockEntity(new EmptyBlockEntity(pos.up(),world.getBlockState(pos.up())));
+            world.addBlockEntity(new EmptyBlockEntity(pos.up(), world.getBlockState(pos.up())));
             world.getBlockEntity(pos.up()).setComponents(blockEntity.getComponents());
         }
     }
+
 }
