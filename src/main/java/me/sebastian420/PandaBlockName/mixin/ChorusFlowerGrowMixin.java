@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import me.sebastian420.PandaBlockName.EmptyBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChorusFlowerBlock;
+import net.minecraft.block.SeaPickleBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;

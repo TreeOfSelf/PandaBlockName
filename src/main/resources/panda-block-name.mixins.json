@@ -16,6 +16,7 @@
     "PistonBlockEntityMixin",
     "PistonBlockMixin",
     "SaplingGrowMixin",
+    "SeaPickleMixin",
     "StemBlockGrowMixin",
     "StemPlantGrowMixin",
     "SugarCaneGrowMixin",
