@@ -57,6 +57,7 @@ public class SaplingGrowMixin {
     public void generateFour(ServerWorld world, ChunkGenerator chunkGenerator, BlockPos pos, BlockState state, Random random, CallbackInfoReturnable<Boolean> cir,
                               @Local(ordinal = 0) int i,
                               @Local(ordinal = 1) int j) {
+
         BlockPos blockPos = pos.add(i + 1 , 0, j + 1);
         BlockEntity blockEntity = world.getBlockEntity(blockPos);
         if (blockEntity instanceof EmptyBlockEntity) {

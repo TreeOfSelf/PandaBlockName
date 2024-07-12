@@ -22,9 +22,14 @@ public abstract class BlockChangeMixin {
 
     @Inject(method = "onStateReplaced", at = @At("HEAD"))
     private void onStateReplacedInject(World world, BlockPos pos, BlockState state, boolean moved, CallbackInfo info) {
-        if (this.asBlockState().getBlock() != state.getBlock()) {
+        /*if (this.asBlockState().getBlock() != state.getBlock()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof EmptyBlockEntity)  world.removeBlockEntity(pos);
-        }
+            if (blockEntity instanceof EmptyBlockEntity)  {
+                System.out.println("REMOVED FOR");
+                System.out.println(this.asBlockState());
+                System.out.println(state);
+                world.removeBlockEntity(pos);
+            }
+        }*/
     }
 }

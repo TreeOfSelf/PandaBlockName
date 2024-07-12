@@ -12,8 +12,9 @@
     "EndermanPlaceMixin",
     "PistonBlockEntityMixin",
     "PistonBlockMixin",
-    "PlantGrowMixin",
     "SaplingGrowMixin",
+    "StemBlockGrowMixin",
+    "StemPlantGrowMixin",
     "VineGrowMixin",
     "WorldChunkMixin"
   ],
