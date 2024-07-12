@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SeaPickleBlock.class)
 public class SeaPickleMixin {
-    @Inject(method = "grow", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 0))
+    @Inject(method = "grow", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 0, shift = At.Shift.AFTER))
     public void grow(ServerWorld world, Random random, BlockPos pos, BlockState state, CallbackInfo ci,
                      @Local(ordinal = 1) BlockPos blockPos) {
         BlockEntity blockEntity = world.getBlockEntity(pos);

@@ -23,7 +23,7 @@ public class ChorusFlowerGrowMixin {
             origin.set(pos);
     }
 
-    @Inject(method = "grow", at = @At(value = "INVOKE_ASSIGN", target="Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"))
+    @Inject(method = "grow", at = @At(value = "INVOKE", target="Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER))
     private void postGrow(World world, BlockPos pos, int age, CallbackInfo ci,
                          @Share("origin") LocalRef<BlockPos> origin) {
         BlockPos originalPos = origin.get();

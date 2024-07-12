@@ -27,7 +27,7 @@ public class HugeFungusGrowMixin {
         origin.set(context.getOrigin());
     }
 
-    @Inject(method = "generateStem", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/StructureWorldAccess;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"))
+    @Inject(method = "generateStem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/StructureWorldAccess;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER))
     private void generateStem(StructureWorldAccess world, Random random, HugeFungusFeatureConfig config, BlockPos pos, int stemHeight, boolean thickStem, CallbackInfo ci,
                               @Share("origin") LocalRef<BlockPos> origin,
                               @Local(ordinal = 0) BlockPos.Mutable blockPos) {
