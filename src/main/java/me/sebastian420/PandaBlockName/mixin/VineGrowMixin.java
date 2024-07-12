@@ -16,8 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(VineBlock.class)
 public abstract class VineGrowMixin {
-
-
+    
     @Inject(method = "randomTick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 0))
     protected void randomTickOne(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
                                  @Local(ordinal = 2) BlockPos blockPos) {
@@ -72,8 +71,6 @@ public abstract class VineGrowMixin {
             world.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
         }
     }
-
-
 
     @Inject(method = "randomTick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 7))
     protected void randomTickEight(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
