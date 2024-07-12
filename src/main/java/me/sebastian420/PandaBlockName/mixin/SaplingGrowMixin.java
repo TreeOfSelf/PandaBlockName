@@ -3,6 +3,7 @@ package me.sebastian420.PandaBlockName.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import me.sebastian420.PandaBlockName.EmptyBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.World;
@@ -28,7 +29,7 @@ public class SaplingGrowMixin {
                                @Local(ordinal = 2) Set<BlockPos> set3,
                                @Local(ordinal = 3) Set<BlockPos> set4) {
 
-        World world = (World) structureWorldAccess;
+        ServerWorld world = structureWorldAccess.toServerWorld();
         BlockEntity blockEntity = world.getBlockEntity(context.getOrigin());
 
         if (blockEntity instanceof EmptyBlockEntity) {

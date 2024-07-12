@@ -42,24 +42,8 @@ public class HugeFungusGrowMixin {
         }
     }
 
-    @Inject(method = "generateStem", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", ordinal = 0))
+    @Inject(method = "generateStem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", ordinal = 0, shift = At.Shift.AFTER))
     private void generateStemTwo(StructureWorldAccess world, Random random, HugeFungusFeatureConfig config, BlockPos pos, int stemHeight, boolean thickStem, CallbackInfo ci,
-                              @Share("origin") LocalRef<BlockPos> origin,
-                              @Local(ordinal = 0) BlockPos.Mutable blockPos) {
-        BlockPos originalPos = origin.get();
-        if (originalPos != null){
-            BlockEntity blockEntity = world.getBlockEntity(originalPos);
-            if (blockEntity instanceof EmptyBlockEntity) {
-                World realWorld = (World) world;
-                realWorld.addBlockEntity(new EmptyBlockEntity(blockPos,realWorld.getBlockState(blockPos)));
-                realWorld.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
-            }
-        }
-    }
-
-
-    @Inject(method = "generateStem", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", ordinal = 1))
-    private void generateStemThree(StructureWorldAccess world, Random random, HugeFungusFeatureConfig config, BlockPos pos, int stemHeight, boolean thickStem, CallbackInfo ci,
                                  @Share("origin") LocalRef<BlockPos> origin,
                                  @Local(ordinal = 0) BlockPos.Mutable blockPos) {
         BlockPos originalPos = origin.get();
@@ -73,7 +57,23 @@ public class HugeFungusGrowMixin {
         }
     }
 
-    @Inject(method = "placeHatBlock", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", ordinal = 0))
+
+    @Inject(method = "generateStem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", ordinal = 1, shift = At.Shift.AFTER))
+    private void generateStemThree(StructureWorldAccess world, Random random, HugeFungusFeatureConfig config, BlockPos pos, int stemHeight, boolean thickStem, CallbackInfo ci,
+                                   @Share("origin") LocalRef<BlockPos> origin,
+                                   @Local(ordinal = 0) BlockPos.Mutable blockPos) {
+        BlockPos originalPos = origin.get();
+        if (originalPos != null){
+            BlockEntity blockEntity = world.getBlockEntity(originalPos);
+            if (blockEntity instanceof EmptyBlockEntity) {
+                World realWorld = (World) world;
+                realWorld.addBlockEntity(new EmptyBlockEntity(blockPos,realWorld.getBlockState(blockPos)));
+                realWorld.getBlockEntity(blockPos).setComponents(blockEntity.getComponents());
+            }
+        }
+    }
+
+    @Inject(method = "placeHatBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", ordinal = 0, shift = At.Shift.AFTER))
     private void placeHateBlock(WorldAccess world, Random random, HugeFungusFeatureConfig config, BlockPos.Mutable pos, float decorationChance, float generationChance, float vineChance, CallbackInfo ci,
                                 @Share("origin") LocalRef<BlockPos> origin) {
         BlockPos originalPos = origin.get();
@@ -88,9 +88,9 @@ public class HugeFungusGrowMixin {
     }
 
 
-    @Inject(method = "placeHatBlock", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", ordinal = 1))
+    @Inject(method = "placeHatBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", ordinal = 1, shift = At.Shift.AFTER))
     private void placeHateBlockTwo(WorldAccess world, Random random, HugeFungusFeatureConfig config, BlockPos.Mutable pos, float decorationChance, float generationChance, float vineChance, CallbackInfo ci,
-                                @Share("origin") LocalRef<BlockPos> origin) {
+                                   @Share("origin") LocalRef<BlockPos> origin) {
         BlockPos originalPos = origin.get();
         if (originalPos != null){
             BlockEntity blockEntity = world.getBlockEntity(originalPos);
