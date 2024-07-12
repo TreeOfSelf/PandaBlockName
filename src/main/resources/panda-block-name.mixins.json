@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BambooGrowMixin",
+    "BambooOtherGrowMixin",
     "BlockDropMixin",
     "BlockPlaceMixin",
     "CactusGrowMixin",
