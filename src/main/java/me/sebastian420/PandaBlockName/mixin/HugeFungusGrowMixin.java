@@ -52,4 +52,10 @@ public class HugeFungusGrowMixin {
         BlockEntityPlacer.move((World) world, pos, blockPos);
     }
 
+    @Inject(method = "generateHat", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/feature/HugeFungusFeature;placeWithOptionalVines(Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/random/Random;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)V", shift = At.Shift.AFTER))
+    private void optionalVine(StructureWorldAccess world, Random random, HugeFungusFeatureConfig config, BlockPos pos, int stemHeight, boolean thickStem, CallbackInfo ci,
+                                  @Local(ordinal = 0) BlockPos.Mutable blockPos) {
+        BlockEntityPlacer.move((World) world, pos, blockPos);
+    }
+
 }
