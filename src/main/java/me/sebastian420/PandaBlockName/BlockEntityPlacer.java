@@ -63,6 +63,13 @@ public class BlockEntityPlacer {
         componentMapBuilder.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(customData));
         return componentMapBuilder.build();
     }
+    public static void move(World world, BlockPos moveFrom, BlockPos moveTo) {
+        BlockEntity blockEntity = world.getBlockEntity(moveFrom);
+        if (blockEntity instanceof EmptyBlockEntity) {
+            world.addBlockEntity(new EmptyBlockEntity(moveTo,world.getBlockState(moveTo)));
+            world.getBlockEntity(moveTo).setComponents(blockEntity.getComponents());
+        }
+    }
 
     public static void place(World world, BlockState prevBlockState, BlockState blockState,BlockPos blockPos, ItemStack itemStack, ComponentMap prevComponentMap ) {
 

@@ -1,7 +1,6 @@
 package me.sebastian420.PandaBlockName.mixin;
 
-import me.sebastian420.PandaBlockName.EmptyBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
+import me.sebastian420.PandaBlockName.BlockEntityPlacer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
@@ -17,11 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class HugeRedMushroomGrowMixin {
     @Inject(method = "generateCap", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/feature/HugeRedMushroomFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", shift = At.Shift.AFTER))
     protected void generateCap(WorldAccess world, Random random, BlockPos start, int y, BlockPos.Mutable mutable, HugeMushroomFeatureConfig config, CallbackInfo ci) {
-        World realWorld = (World) world;
-        BlockEntity blockEntity = realWorld.getBlockEntity(start);
-        if (blockEntity instanceof EmptyBlockEntity) {
-            realWorld.addBlockEntity(new EmptyBlockEntity(mutable,realWorld.getBlockState(mutable)));
-            realWorld.getBlockEntity(mutable).setComponents(blockEntity.getComponents());
-        }
+        BlockEntityPlacer.move((World) world, start, mutable);
     }
 }
