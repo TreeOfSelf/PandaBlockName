@@ -1,5 +1,6 @@
 package me.sebastian420.PandaBlockName;
 
+import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
@@ -16,6 +17,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Unique;
+
+
 
 import java.util.List;
 
@@ -131,7 +134,7 @@ public class BlockEntityPlacer {
 
             //If bed
             if (blockState.contains(Properties.BED_PART)) {
-                checkPos = checkPos.offset(blockState.get(Properties.FACING));
+                checkPos = checkPos.offset(BedBlock.getOppositePartDirection(blockState));
             }
 
             //Handle double places (lilac/doors)
