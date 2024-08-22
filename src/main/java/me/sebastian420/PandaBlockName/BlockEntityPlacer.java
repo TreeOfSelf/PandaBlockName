@@ -70,7 +70,8 @@ public class BlockEntityPlacer {
         BlockEntity blockEntity = world.getBlockEntity(moveFrom);
         if (blockEntity instanceof EmptyBlockEntity) {
             world.addBlockEntity(new EmptyBlockEntity(moveTo,world.getBlockState(moveTo)));
-            world.getBlockEntity(moveTo).setComponents(blockEntity.getComponents());
+            BlockEntity moveToEntity = world.getBlockEntity(moveTo);
+            if (moveToEntity != null)  moveToEntity.setComponents(blockEntity.getComponents());
         }
     }
 
