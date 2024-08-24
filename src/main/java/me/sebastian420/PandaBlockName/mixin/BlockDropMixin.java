@@ -1,10 +1,13 @@
 package me.sebastian420.PandaBlockName.mixin;
 
 import me.sebastian420.PandaBlockName.ItemData;
+import me.sebastian420.PandaBlockName.PandaBlockName;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
+import net.minecraft.inventory.LootableInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
@@ -61,7 +64,6 @@ public class BlockDropMixin {
 
     @Inject(method = "getDroppedStacks", at = @At(value = "TAIL"))
     private void getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder, CallbackInfoReturnable<List<ItemStack>> cir) {
-
         World world = builder.getWorld();
         BlockEntity blockEntity = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
         if (blockEntity == null){
@@ -153,7 +155,7 @@ public class BlockDropMixin {
                     }
                 }
             }
-            world.removeBlockEntity(blockEntity.getPos());
+
         }
     }
 }
