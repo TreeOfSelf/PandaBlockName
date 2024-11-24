@@ -30,7 +30,7 @@ public abstract class EndermanEntityMixin implements EndermanEntityAccess {
         return this.componentMap;
     }
 
-    @Inject(method = "dropEquipment", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/mob/EndermanEntity;dropStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/entity/ItemEntity;"))
+    @Inject(method = "dropEquipment", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/mob/EndermanEntity;dropStack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemStack;)Lnet/minecraft/entity/ItemEntity;"))
     protected void dropEquipment(ServerWorld world, DamageSource source, boolean causedByPlayer, CallbackInfo ci, @Local(ordinal = 1) ItemStack itemStack) {
         ComponentMap componentMap = getItemComponentMap();
         if (componentMap != null){
