@@ -13,6 +13,7 @@ import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -29,10 +30,7 @@ import java.util.Optional;
 @Mixin(CraftingScreenHandler.class)
 public abstract class CraftingScreenHandlerMixin extends ScreenHandler {
 
-    @Final
-    @Shadow private CraftingResultInventory result;
-    @Final
-    @Shadow private RecipeInputInventory input;
+
 
 
     protected CraftingScreenHandlerMixin(@Nullable ScreenHandlerType<?> type, int syncId) {
@@ -40,14 +38,7 @@ public abstract class CraftingScreenHandlerMixin extends ScreenHandler {
     }
 
     @Inject(method = "updateResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/CraftingResultInventory;setStack(ILnet/minecraft/item/ItemStack;)V"), cancellable = true)
-    private static void onUpdateResult(ScreenHandler handler,
-                                       World world,
-                                       PlayerEntity player,
-                                       RecipeInputInventory craftingInventory,
-                                       CraftingResultInventory resultInventory,
-                                       @Nullable RecipeEntry<CraftingRecipe> recipe,
-                                       CallbackInfo ci,
-                                       @Local(ordinal = 0) ItemStack itemStack) {
+    private static void onUpdateResult(ScreenHandler handler, ServerWorld world, PlayerEntity player, RecipeInputInventory craftingInventory, CraftingResultInventory resultInventory, RecipeEntry<CraftingRecipe> recipe, CallbackInfo ci, @Local(ordinal = 0) ItemStack itemStack) {
         Text customName = null;
         LoreComponent customLore = null;
         boolean allSame = true;
