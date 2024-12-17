@@ -4,6 +4,7 @@
 ## Description
 
 Makes naming blocks in anvils more interesting. This mod allows you to name blocks in the anvil, place them, and then break them again and they will retain their names. This also applies to growing plants with named seeds, the produced fruit/seed will also have the same name.
+When crafting, if all of the items have the same custom_name tag, then the produced item will have that custom_name tag.
 
 ## Support
 
