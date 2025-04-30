@@ -32,9 +32,9 @@ public class BlockDropMixin {
         String nameKey = "itemName_"+index;
         String loreKey = "itemLore_"+index;
         if (customData.contains(nameKey))
-            itemData.CustomName = Text.Serialization.fromJson(customData.getString(nameKey), world.getRegistryManager());
+            itemData.CustomName = Text.Serialization.fromJson(customData.getString(nameKey).get(), world.getRegistryManager());
         if (customData.contains(loreKey)) {
-            String[] loreString = customData.getString(loreKey).split("\\{\\\\\"\\\\}");
+            String[] loreString = customData.getString(loreKey).get().split("\\{\\\\\"\\\\}");
             List<Text> textList = new ArrayList<>();
             for (String s : loreString) {
                 textList.add(Text.Serialization.fromJson(s,world.getRegistryManager()));
