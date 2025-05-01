@@ -14,9 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(HugeBrownMushroomFeature.class)
 public class HugeBrownMushroomGrowMixin {
+    /* To-do fix brown mushroom
     @Inject(method = "generateCap", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/feature/HugeBrownMushroomFeature;setBlockState(Lnet/minecraft/world/ModifiableWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", shift = At.Shift.AFTER))
     protected void generateCap(WorldAccess world, Random random, BlockPos start, int y, BlockPos.Mutable mutable, HugeMushroomFeatureConfig config, CallbackInfo ci) {
         if (!(world instanceof World)) return;
         BlockEntityPlacer.move((World) world, start, mutable);
     }
+    */
 }
