@@ -10,12 +10,15 @@ import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.spongepowered.asm.mixin.Unique;
 
 
@@ -66,6 +69,7 @@ public class BlockEntityPlacer {
         componentMapBuilder.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(customData));
         return componentMapBuilder.build();
     }
+
     public static void move(World world, BlockPos moveFrom, BlockPos moveTo) {
         BlockEntity blockEntity = world.getBlockEntity(moveFrom);
         if (blockEntity instanceof EmptyBlockEntity) {
@@ -74,6 +78,9 @@ public class BlockEntityPlacer {
             if (moveToEntity != null)  moveToEntity.setComponents(blockEntity.getComponents());
         }
     }
+
+
+
 
     public static void place(World world, BlockState prevBlockState, BlockState blockState,BlockPos blockPos, ItemStack itemStack, ComponentMap prevComponentMap ) {
 

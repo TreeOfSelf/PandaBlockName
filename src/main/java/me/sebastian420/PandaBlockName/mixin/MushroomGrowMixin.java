@@ -23,7 +23,6 @@ public class MushroomGrowMixin {
         originalPos.set(pos);
     }
 
-
     @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER))
     protected void postGrow(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
                         @Local(ordinal = 1) BlockPos blockPos,
