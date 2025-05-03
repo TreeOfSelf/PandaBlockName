@@ -19,7 +19,7 @@ public class PistonBlockEntityMixin {
     private void ourFinish(CallbackInfo ci) {
     }
 
-    @Inject(method = "tick", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "tick", at = @At("RETURN"))
     private static void postTick(World world, BlockPos pos, BlockState state, PistonBlockEntity blockEntity, CallbackInfo ci) {
         if(blockEntity.isRemoved() || world.getBlockEntity(pos) == null){
             ComponentMap savedComponents = blockEntity.getComponents();
