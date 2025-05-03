@@ -21,6 +21,7 @@
     "MushroomGrowMixin",
     "PistonBlockEntityMixin",
     "PistonBlockMixin",
+    "PumpkinShearMixin",
     "SaplingGrowMixin",
     "SeaPickleMixin",
     "StemBlockGrowMixin",
