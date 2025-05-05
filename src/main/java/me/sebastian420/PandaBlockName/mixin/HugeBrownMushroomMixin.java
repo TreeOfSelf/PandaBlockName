@@ -26,6 +26,6 @@ public class HugeBrownMushroomMixin {
     private void afterGenerateStem(WorldAccess world, net.minecraft.util.math.random.Random random,
                                    BlockPos start, int y, BlockPos.Mutable mutable,
                                    HugeMushroomFeatureConfig config, CallbackInfo ci) {
-        BlockEntityPlacer.move((ServerWorld) world, start, mutable);
+        BlockEntityPlacer.move(world, start, mutable);
     }
 }

@@ -18,12 +18,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
-import org.apache.logging.log4j.core.jmx.Server;
 import org.spongepowered.asm.mixin.Unique;
 
 
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class BlockEntityPlacer {
 
@@ -76,6 +76,27 @@ public class BlockEntityPlacer {
             world.addBlockEntity(new EmptyBlockEntity(moveTo,world.getBlockState(moveTo)));
             BlockEntity moveToEntity = world.getBlockEntity(moveTo);
             if (moveToEntity != null)  moveToEntity.setComponents(blockEntity.getComponents());
+        }
+    }
+    public static void move(WorldAccess world, BlockPos moveFrom, BlockPos moveTo) {
+        BlockEntity blockEntity = world.getBlockEntity(moveFrom);
+        if (blockEntity instanceof EmptyBlockEntity) {
+            AtomicReference<ServerWorld> savedWorld = new AtomicReference<>();
+
+           if (world.getServer() == null) return;
+
+           world.getServer().getWorlds().forEach(serverWorld -> {
+                if (serverWorld.getDimension() == world.getDimension()) {
+                    savedWorld.set(serverWorld);
+                }
+            });
+
+            ServerWorld savedWorldReference = savedWorld.get();
+            if (savedWorldReference != null) {
+                savedWorldReference.addBlockEntity(new EmptyBlockEntity(moveTo,savedWorldReference.getBlockState(moveTo)));
+                BlockEntity moveToEntity = savedWorldReference.getBlockEntity(moveTo);
+                if (moveToEntity != null)  moveToEntity.setComponents(blockEntity.getComponents());
+            }
         }
     }
 
