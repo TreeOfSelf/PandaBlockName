@@ -22,6 +22,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static me.sebastian420.PandaBlockName.PandaBlockName.LOGGER;
+
 @Mixin(value = net.minecraft.block.AbstractBlock.class, priority = 5000)
 public class BlockDropMixin {
 
@@ -94,7 +96,16 @@ public class BlockDropMixin {
                             boolean newItemChanged = false;
                             if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
                                 newItem = item.copyWithCount(1);
-                                newItem.set(DataComponentTypes.CUSTOM_NAME, blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME));
+
+                                Text customName = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME);
+                                if (customName.getString().startsWith("{")) {
+                                    try {
+                                        customName = Text.Serialization.fromJson(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString(),world.getRegistryManager());
+                                    } catch (Exception ignored) {
+                                    }
+                                }
+
+                                newItem.set(DataComponentTypes.CUSTOM_NAME, customName);
                                 newItemChanged = true;
                             }
                             if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
@@ -143,7 +154,17 @@ public class BlockDropMixin {
 
                 if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
                     for (ItemStack item : items) {
-                        item.set(DataComponentTypes.CUSTOM_NAME,  blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME));
+
+
+                        Text customName = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME);
+                        if (customName.getString().startsWith("{")) {
+                            try {
+                                customName = Text.Serialization.fromJson(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString(),world.getRegistryManager());
+                            } catch (Exception ignored) {
+                            }
+                        }
+
+                        item.set(DataComponentTypes.CUSTOM_NAME,  customName);
                     }
                 }
                 if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {

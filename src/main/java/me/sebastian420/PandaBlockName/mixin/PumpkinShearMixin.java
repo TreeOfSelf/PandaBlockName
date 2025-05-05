@@ -15,6 +15,7 @@ import net.minecraft.item.Items;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -50,7 +51,16 @@ public abstract class PumpkinShearMixin {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity != null) {
                 if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
-                    modifiedSeeds.set(DataComponentTypes.CUSTOM_NAME, blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME));
+
+                    Text customName = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME);
+                    if (customName.getString().startsWith("{")) {
+                        try {
+                            customName = Text.Serialization.fromJson(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString(),world.getRegistryManager());
+                        } catch (Exception ignored) {
+                        }
+                    }
+
+                    modifiedSeeds.set(DataComponentTypes.CUSTOM_NAME, customName);
                 }
                 if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
                     modifiedSeeds.set(DataComponentTypes.LORE, blockEntity.getComponents().get(DataComponentTypes.LORE));
