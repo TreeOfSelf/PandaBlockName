@@ -1,5 +1,8 @@
 package me.sebastian420.PandaBlockName;
 
+import com.google.gson.JsonElement;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -14,6 +17,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -33,7 +37,11 @@ public class BlockEntityPlacer {
         StringBuilder combined = new StringBuilder();
 
         for (int i = 0; i < texts.size(); i++) {
-            combined.append(Text.Serialization.toJsonString(texts.get(i), registryManager));
+
+            DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, texts.get(i));
+            String string = json.getOrThrow().getAsString();
+
+            combined.append(string);
             if (i < texts.size() - 1) {
                 combined.append("{\\\"\\}");
             }
@@ -56,7 +64,9 @@ public class BlockEntityPlacer {
         }
 
         if (itemStack.contains(DataComponentTypes.CUSTOM_NAME)) {
-            customData.putString(getStringRef("itemName_",customData),Text.Serialization.toJsonString(itemStack.get(DataComponentTypes.CUSTOM_NAME),world.getRegistryManager()));
+            DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponentTypes.CUSTOM_NAME));
+            String string = json.getOrThrow().getAsString();
+            customData.putString(getStringRef("itemName_",customData),string);
         }
         if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
             String jsonString = encodeListTextToString(itemStack.get(DataComponentTypes.LORE).lines(),world.getRegistryManager());
@@ -136,7 +146,10 @@ public class BlockEntityPlacer {
                     }
 
                     if (itemStack.contains(DataComponentTypes.CUSTOM_NAME)) {
-                        customData.putString("itemName_2", Text.Serialization.toJsonString(itemStack.get(DataComponentTypes.CUSTOM_NAME),world.getRegistryManager()));
+
+                        DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponentTypes.CUSTOM_NAME));
+                        String string = json.getOrThrow().getAsString();
+                        customData.putString("itemName_2", string);
                     }
                     if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
                         String jsonString = encodeListTextToString(itemStack.get(DataComponentTypes.LORE).lines(),world.getRegistryManager());

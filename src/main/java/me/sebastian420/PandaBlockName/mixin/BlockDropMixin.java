@@ -1,5 +1,10 @@
 package me.sebastian420.PandaBlockName.mixin;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import me.sebastian420.PandaBlockName.ItemData;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -11,6 +16,7 @@ import net.minecraft.loot.context.LootWorldContext;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,13 +39,19 @@ public class BlockDropMixin {
         ItemData itemData = new ItemData();
         String nameKey = "itemName_"+index;
         String loreKey = "itemLore_"+index;
-        if (customData.contains(nameKey))
-            itemData.CustomName = Text.Serialization.fromJson(customData.getString(nameKey).get(), world.getRegistryManager());
+        if (customData.contains(nameKey)) {
+            JsonElement jsonElement = JsonParser.parseString(customData.getString(nameKey).get());
+            DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+            itemData.CustomName = result.getOrThrow().getFirst();
+        }
+
         if (customData.contains(loreKey)) {
             String[] loreString = customData.getString(loreKey).get().split("\\{\\\\\"\\\\}");
             List<Text> textList = new ArrayList<>();
             for (String s : loreString) {
-                textList.add(Text.Serialization.fromJson(s,world.getRegistryManager()));
+                JsonElement jsonElement = JsonParser.parseString(s);
+                DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+                textList.add(result.getOrThrow().getFirst());
             }
             itemData.Lore = new LoreComponent(textList);
         }
@@ -100,7 +112,9 @@ public class BlockDropMixin {
                                 Text customName = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME);
                                 if (customName.getString().startsWith("{")) {
                                     try {
-                                        customName = Text.Serialization.fromJson(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString(),world.getRegistryManager());
+                                        JsonElement jsonElement = JsonParser.parseString(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString());
+                                        DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+                                        customName = result.getOrThrow().getFirst();
                                     } catch (Exception ignored) {
                                     }
                                 }
@@ -159,11 +173,12 @@ public class BlockDropMixin {
                         Text customName = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME);
                         if (customName.getString().startsWith("{")) {
                             try {
-                                customName = Text.Serialization.fromJson(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString(),world.getRegistryManager());
+                                JsonElement jsonElement = JsonParser.parseString(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString());
+                                DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+                                customName = result.getOrThrow().getFirst();
                             } catch (Exception ignored) {
                             }
                         }
-
                         item.set(DataComponentTypes.CUSTOM_NAME,  customName);
                     }
                 }
