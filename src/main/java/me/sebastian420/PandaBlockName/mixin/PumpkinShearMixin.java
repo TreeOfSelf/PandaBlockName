@@ -1,5 +1,10 @@
 package me.sebastian420.PandaBlockName.mixin;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CarvedPumpkinBlock;
@@ -16,6 +21,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -55,7 +61,9 @@ public abstract class PumpkinShearMixin {
                     Text customName = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME);
                     if (customName.getString().startsWith("{")) {
                         try {
-                            customName = Text.Serialization.fromJson(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString(),world.getRegistryManager());
+                            JsonElement jsonElement = JsonParser.parseString(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString());
+                            DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+                            customName = result.getOrThrow().getFirst();
                         } catch (Exception ignored) {
                         }
                     }
