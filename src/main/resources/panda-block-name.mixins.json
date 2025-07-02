@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "me.sebastian420.PandaBlockName.mixin",
+  "package": "me.TreeOfSelf.PandaBlockName.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BambooGrowMixin",
