@@ -39,7 +39,7 @@ public class BlockEntityPlacer {
         for (int i = 0; i < texts.size(); i++) {
 
             DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, texts.get(i));
-            String string = json.getOrThrow().getAsString();
+            String string = json.getOrThrow().toString();
 
             combined.append(string);
             if (i < texts.size() - 1) {
@@ -65,7 +65,7 @@ public class BlockEntityPlacer {
 
         if (itemStack.contains(DataComponentTypes.CUSTOM_NAME)) {
             DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponentTypes.CUSTOM_NAME));
-            String string = json.getOrThrow().getAsString();
+            String string = json.getOrThrow().toString();
             customData.putString(getStringRef("itemName_",customData),string);
         }
         if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
@@ -148,7 +148,7 @@ public class BlockEntityPlacer {
                     if (itemStack.contains(DataComponentTypes.CUSTOM_NAME)) {
 
                         DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponentTypes.CUSTOM_NAME));
-                        String string = json.getOrThrow().getAsString();
+                        String string = json.getOrThrow().toString();
                         customData.putString("itemName_2", string);
                     }
                     if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
