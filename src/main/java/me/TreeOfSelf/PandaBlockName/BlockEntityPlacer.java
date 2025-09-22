@@ -63,16 +63,23 @@ public class BlockEntityPlacer {
             customData = prevComponenetMap.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
         }
 
+        int currentPropertyValue = blockState.get(property);
+        String itemIndex = String.valueOf(currentPropertyValue);
+
         if (itemStack.contains(DataComponentTypes.CUSTOM_NAME)) {
             DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponentTypes.CUSTOM_NAME));
             String string = json.getOrThrow().toString();
-            customData.putString(getStringRef("itemName_",customData),string);
+            customData.putString("itemName_" + itemIndex, string);
         }
         if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
             String jsonString = encodeListTextToString(itemStack.get(DataComponentTypes.LORE).lines(),world.getRegistryManager());
-            customData.putString(getStringRef("itemLore_",customData),jsonString);
+            customData.putString("itemLore_" + itemIndex, jsonString);
         }
 
+        if (itemStack.contains(DataComponentTypes.CUSTOM_DATA)) {
+            NbtCompound itemCustomData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+            customData.put("itemCustomData_" + itemIndex, itemCustomData);
+        }
 
         ComponentMap.Builder componentMapBuilder = ComponentMap.builder();
         componentMapBuilder.addAll(prevComponenetMap);
@@ -156,6 +163,11 @@ public class BlockEntityPlacer {
                         customData.putString("itemLore_2",jsonString);
                     }
 
+                    if (itemStack.contains(DataComponentTypes.CUSTOM_DATA)) {
+                        NbtCompound itemCustomData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                        customData.put("itemCustomData_2", itemCustomData);
+                    }
+
                     ComponentMap.Builder componentMapBuilder = ComponentMap.builder();
                     componentMapBuilder.addAll(prevComponentMap);
                     componentMapBuilder.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(customData));
@@ -202,6 +214,16 @@ public class BlockEntityPlacer {
             }
             if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
                 newBlockEntityComponents.add(DataComponentTypes.LORE, itemStack.get(DataComponentTypes.LORE));
+            }
+
+            if (itemStack.contains(DataComponentTypes.CUSTOM_DATA)) {
+                NbtCompound existingCustomData = new NbtCompound();
+                if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA)) {
+                    existingCustomData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                }
+                NbtCompound itemCustomData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                existingCustomData.put("itemCustomData_1", itemCustomData);
+                newBlockEntityComponents.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(existingCustomData));
             }
 
             blockEntity.setComponents(newBlockEntityComponents.build());

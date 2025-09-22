@@ -12,12 +12,14 @@ import net.minecraft.block.CarvedPumpkinBlock;
 import net.minecraft.block.PumpkinBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
@@ -78,6 +80,14 @@ public abstract class PumpkinShearMixin {
             }
             if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
                 modifiedSeeds.set(DataComponentTypes.LORE, blockEntity.getComponents().get(DataComponentTypes.LORE));
+            }
+            
+            if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA)) {
+                NbtCompound customData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                if (customData.contains("itemCustomData_1")) {
+                    NbtCompound itemCustomData = customData.getCompound("itemCustomData_1").get();
+                    modifiedSeeds.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(itemCustomData));
+                }
             }
         }
 

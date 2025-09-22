@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import me.TreeOfSelf.PandaBlockName.PandaBlockNameConfig;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.RecipeInputInventory;
@@ -44,15 +45,17 @@ public abstract class CraftingScreenHandlerMixin extends ScreenHandler {
         
         Text customName = null;
         LoreComponent customLore = null;
+        NbtComponent customData = null;
         boolean allSame = true;
         for (int index = 0; index < craftingInventory.size() ; index ++){
             ItemStack item = craftingInventory.getStack(index);
             if (item.getItem() == Items.AIR) continue;
 
-            if (customName == null && customLore == null) {
+            if (customName == null && customLore == null && customData == null) {
                 if(item.contains(DataComponentTypes.CUSTOM_NAME)) customName = item.get(DataComponentTypes.CUSTOM_NAME);
                 if (item.contains(DataComponentTypes.LORE)) customLore = item.get(DataComponentTypes.LORE);
-                if (customName == null && customLore == null) break;
+                if (item.contains(DataComponentTypes.CUSTOM_DATA)) customData = item.get(DataComponentTypes.CUSTOM_DATA);
+                if (customName == null && customLore == null && customData == null) break;
             } else {
                 if (customName != null) {
                     if (item.contains(DataComponentTypes.CUSTOM_NAME)) {
@@ -76,6 +79,17 @@ public abstract class CraftingScreenHandlerMixin extends ScreenHandler {
                         break;
                     }
                 }
+                if (customData != null) {
+                    if (item.contains(DataComponentTypes.CUSTOM_DATA)) {
+                        if (!item.get(DataComponentTypes.CUSTOM_DATA).equals(customData)) {
+                            allSame = false;
+                            break;
+                        }
+                    } else {
+                        allSame = false;
+                        break;
+                    }
+                }
 
             }
         }
@@ -83,6 +97,7 @@ public abstract class CraftingScreenHandlerMixin extends ScreenHandler {
         if (allSame) {
             if (customName != null) itemStack.set(DataComponentTypes.CUSTOM_NAME, customName);
             if (customLore != null) itemStack.set(DataComponentTypes.LORE, customLore);
+            if (customData != null) itemStack.set(DataComponentTypes.CUSTOM_DATA, customData);
         }
     }
 }

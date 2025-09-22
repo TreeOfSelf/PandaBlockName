@@ -10,7 +10,9 @@ import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextCodecs;
 import net.minecraft.util.math.BlockPos;
@@ -48,6 +50,14 @@ public class BlockPickMixin {
             
             if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
                 stack.set(DataComponentTypes.LORE, blockEntity.getComponents().get(DataComponentTypes.LORE));
+            }
+            
+            if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA)) {
+                NbtCompound customData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                if (customData.contains("itemCustomData_1")) {
+                    NbtCompound itemCustomData = customData.getCompound("itemCustomData_1").get();
+                    stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(itemCustomData));
+                }
             }
             
             cir.setReturnValue(stack);
