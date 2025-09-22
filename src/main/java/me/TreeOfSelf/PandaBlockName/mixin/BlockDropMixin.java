@@ -11,6 +11,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootWorldContext;
@@ -38,6 +39,8 @@ public class BlockDropMixin {
         ItemData itemData = new ItemData();
         String nameKey = "itemName_"+index;
         String loreKey = "itemLore_"+index;
+        String customDataKey = "itemCustomData_"+index;
+        
         if (customData.contains(nameKey)) {
             JsonElement jsonElement = JsonParser.parseString(customData.getString(nameKey).get());
             DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
@@ -54,6 +57,11 @@ public class BlockDropMixin {
             }
             itemData.Lore = new LoreComponent(textList);
         }
+        
+        if (customData.contains(customDataKey)) {
+            itemData.CustomData = customData.getCompound(customDataKey).get();
+        }
+        
         return itemData;
     }
 
@@ -91,8 +99,6 @@ public class BlockDropMixin {
             //Multiple
             if (multiple) {
 
-                int itemIndex = 1;
-
                 NbtCompound customData = null;
                 if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA))
                     customData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
@@ -100,11 +106,24 @@ public class BlockDropMixin {
                 List<ItemStack> items = cir.getReturnValue();
                 List<ItemStack> additionalItems = new ArrayList<>();
 
+                int maxPropertyValue = 1;
+                if (state.contains(Properties.PICKLES)) {
+                    maxPropertyValue = state.get(Properties.PICKLES);
+                } else if (state.contains(Properties.CANDLES)) {
+                    maxPropertyValue = state.get(Properties.CANDLES);
+                } else if (state.contains(Properties.LAYERS)) {
+                    maxPropertyValue = state.get(Properties.LAYERS);
+                } else if (state.contains(Properties.SLAB_TYPE)) {
+                    maxPropertyValue = 2;
+                }
+
+                int currentItemIndex = 1;
+
                 outerLoop:
                 for (ItemStack item : items) {
-                    while (item.getCount() > 0) {
+                    while (item.getCount() > 0 && currentItemIndex <= maxPropertyValue) {
                         //First item
-                        if (itemIndex == 1) {
+                        if (currentItemIndex == 1) {
                             ItemStack newItem = null;
                             boolean newItemChanged = false;
                             if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
@@ -128,6 +147,13 @@ public class BlockDropMixin {
                                 newItem.set(DataComponentTypes.LORE, blockEntity.getComponents().get(DataComponentTypes.LORE));
                                 newItemChanged = true;
                             }
+                            
+                            if (customData != null && customData.contains("itemCustomData_1")) {
+                                if (newItem == null) newItem = item.copyWithCount(1);
+                                NbtCompound firstItemCustomData = customData.getCompound("itemCustomData_1").get();
+                                newItem.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(firstItemCustomData));
+                                newItemChanged = true;
+                            }
                             if (newItemChanged) {
                                 item.decrement(1);
                                 addOrCombine(additionalItems, newItem);
@@ -138,7 +164,7 @@ public class BlockDropMixin {
                             if (customData == null) break outerLoop;
                             ItemStack newItem = null;
                             boolean newItemChanged = false;
-                            ItemData itemData = getItemData(world, customData, itemIndex);
+                            ItemData itemData = getItemData(world, customData, currentItemIndex);
                             if (itemData.CustomName != null) {
                                 newItem = item.copyWithCount(1);
                                 newItem.set(DataComponentTypes.CUSTOM_NAME, itemData.CustomName);
@@ -149,6 +175,11 @@ public class BlockDropMixin {
                                 newItem.set(DataComponentTypes.LORE, itemData.Lore);
                                 newItemChanged = true;
                             }
+                            if (itemData.CustomData != null) {
+                                if (newItem == null) newItem = item.copyWithCount(1);
+                                newItem.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(itemData.CustomData));
+                                newItemChanged = true;
+                            }
                             if (newItemChanged) {
                                 item.decrement(1);
                                 addOrCombine(additionalItems, newItem);
@@ -157,7 +188,7 @@ public class BlockDropMixin {
                                 break outerLoop;
                             }
                         }
-                        itemIndex++;
+                        currentItemIndex++;
                     }
                 }
 
@@ -186,6 +217,17 @@ public class BlockDropMixin {
                 if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
                     for (ItemStack item : items) {
                         item.set(DataComponentTypes.LORE,  blockEntity.getComponents().get(DataComponentTypes.LORE));
+                    }
+                }
+                
+                NbtCompound customData = null;
+                if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA))
+                    customData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                
+                if (customData != null && customData.contains("itemCustomData_1")) {
+                    for (ItemStack item : items) {
+                        NbtCompound itemCustomData = customData.getCompound("itemCustomData_1").get();
+                        item.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(itemCustomData));
                     }
                 }
             }
