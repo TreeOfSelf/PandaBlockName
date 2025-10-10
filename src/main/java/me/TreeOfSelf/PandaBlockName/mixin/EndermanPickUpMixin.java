@@ -23,7 +23,7 @@ public class EndermanPickUpMixin {
 
         if (!PandaBlockNameConfig.isFeatureEnabled("Enderman")) return;
 
-        BlockEntity blockEntity = this.enderman.getWorld().getBlockEntity(pos);
+        BlockEntity blockEntity = this.enderman.getEntityWorld().getBlockEntity(pos);
 
         if (blockEntity != null) {
             EndermanEntityAccess accessor = (EndermanEntityAccess) this.enderman;
