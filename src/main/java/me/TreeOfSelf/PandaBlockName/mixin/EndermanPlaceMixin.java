@@ -29,7 +29,7 @@ public class EndermanPlaceMixin {
         ComponentMap componentMap = accessor.getItemComponentMap();
 
         if (componentMap != null){
-            World world = this.enderman.getWorld();
+            World world = this.enderman.getEntityWorld();
             BlockState blockState = world.getBlockState(pos);
             world.addBlockEntity(new EmptyBlockEntity(pos,blockState));
             BlockEntity blockEntity = world.getBlockEntity(pos);

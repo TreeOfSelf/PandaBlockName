@@ -51,7 +51,7 @@ public abstract class PumpkinShearMixin {
             return;
         }
 
-        if (world.isClient) {
+        if (world.isClient()) {
             cir.setReturnValue(ActionResult.SUCCESS);
             return;
         }
@@ -94,7 +94,7 @@ public abstract class PumpkinShearMixin {
         ItemEntity itemEntity = new ItemEntity(world, (double)pos.getX() + 0.5 + (double)direction2.getOffsetX() * 0.65, (double)pos.getY() + 0.1, (double)pos.getZ() + 0.5 + (double)direction2.getOffsetZ() * 0.65, modifiedSeeds);
         itemEntity.setVelocity(0.05 * (double)direction2.getOffsetX() + world.random.nextDouble() * 0.02, 0.05, 0.05 * (double)direction2.getOffsetZ() + world.random.nextDouble() * 0.02);
         world.spawnEntity(itemEntity);
-        stack.damage(1, player, LivingEntity.getSlotForHand(hand));
+        stack.damage(1, player, hand);
         world.emitGameEvent(player, GameEvent.SHEAR, pos);
         player.incrementStat(Stats.USED.getOrCreateStat(Items.SHEARS));
         cir.setReturnValue(ActionResult.SUCCESS);
