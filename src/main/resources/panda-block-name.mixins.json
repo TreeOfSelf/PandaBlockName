@@ -10,6 +10,7 @@
     "BlockPickMixin",
     "BlockPlaceMixin",
     "CactusGrowMixin",
+    "CaveVinePickMixin",
     "ChorusFlowerGrowMixin",
     "CraftingScreenHandlerMixin",
     "EndermanEntityMixin",
@@ -19,6 +20,7 @@
     "HugeFungusGrowMixin",
     "HugeMushroomFeatureMixin",
     "HugeRedMushroomMixin",
+    "LeafDecayMixin",
     "MushroomGrowMixin",
     "PistonBlockEntityMixin",
     "PistonBlockMixin",
@@ -28,6 +30,7 @@
     "StemBlockGrowMixin",
     "StemPlantGrowMixin",
     "SugarCaneGrowMixin",
+    "SweetBerryPickMixin",
     "VineGrowMixin",
     "WorldChunkMixin"
   ],
