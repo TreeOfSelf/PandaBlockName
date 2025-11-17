@@ -35,6 +35,8 @@ public class PandaBlockNameConfig {
         put("VineGrowth", true);
         put("ChorusFlowerGrowth", true);
         put("PumpkinShearing", true);
+        put("GlowBerryPicking", true);
+        put("SweetBerryPicking", true);
         
         // Mushroom/Fungus Features
         put("MushroomGrowth", true);
