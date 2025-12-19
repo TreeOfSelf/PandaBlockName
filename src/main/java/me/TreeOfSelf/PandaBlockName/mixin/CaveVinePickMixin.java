@@ -11,20 +11,15 @@ import net.minecraft.block.CaveVines;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextCodecs;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public interface CaveVinePickMixin {
 
     @Inject(method = "pickBerries", at = @At(value = "HEAD"), cancellable = true)
-    private static void pickBerries(PlayerEntity player, BlockState state, World world, BlockPos pos, CallbackInfoReturnable<ItemActionResult> cir) {
+    private static void pickBerries(PlayerEntity player, BlockState state, World world, BlockPos pos, CallbackInfoReturnable<ActionResult> cir) {
         if (!PandaBlockNameConfig.isVegetationFeatureEnabled("GlowBerryPicking")) {
             return;
         }
@@ -98,7 +93,7 @@ public interface CaveVinePickMixin {
                 // Schedule tick
                 world.scheduleBlockTick(pos, state.getBlock(), 1);
 
-                cir.setReturnValue(ItemActionResult.success(world.isClient));
+                cir.setReturnValue(ActionResult.SUCCESS(world.isClient));
             }
         }
     }
