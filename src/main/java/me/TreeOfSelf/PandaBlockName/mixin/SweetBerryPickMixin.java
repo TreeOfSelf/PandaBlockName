@@ -21,7 +21,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextCodecs;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
+
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -35,7 +35,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class SweetBerryPickMixin {
 
     @Inject(method = "onUseWithItem", at = @At(value = "HEAD"), cancellable = true)
-    private void onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ItemActionResult> cir) {
+    private void onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
         if (!PandaBlockNameConfig.isVegetationFeatureEnabled("SweetBerryPicking")) {
             return;
         }
@@ -105,7 +105,7 @@ public abstract class SweetBerryPickMixin {
                 // Emit game event
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(player, newState));
 
-                cir.setReturnValue(ItemActionResult.success(world.isClient));
+                cir.setReturnValue(ActionResult.SUCCESS);
             }
         }
     }
