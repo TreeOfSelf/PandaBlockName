@@ -5,31 +5,51 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import me.TreeOfSelf.PandaBlockName.BlockEntityPlacer;
 import me.TreeOfSelf.PandaBlockName.PandaBlockNameConfig;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.MushroomPlantBlock;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.MushroomBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(MushroomPlantBlock.class)
+@Mixin(MushroomBlock.class)
 public class MushroomGrowMixin {
 
-    @Inject(method = "randomTick", at = @At(value = "HEAD"))
-    protected void preGrow(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
-                           @Share("originalPos") LocalRef<BlockPos> originalPos) {
-        if (!PandaBlockNameConfig.isVegetationFeatureEnabled("MushroomGrowth")) return;
-        originalPos.set(pos);
-    }
+	@Inject(method = "randomTick", at = @At("HEAD"))
+	protected void preGrow(
+			BlockState state,
+			ServerLevel level,
+			BlockPos pos,
+			RandomSource random,
+			CallbackInfo ci,
+			@Share("originalPos") LocalRef<BlockPos> originalPos
+	) {
+		if (!PandaBlockNameConfig.isVegetationFeatureEnabled("MushroomGrowth")) return;
+		originalPos.set(pos);
+	}
 
-    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER))
-    protected void postGrow(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci,
-                        @Local(ordinal = 1) BlockPos blockPos,
-                        @Share("originalPos") LocalRef<BlockPos> originalPos) {
-        if (!PandaBlockNameConfig.isVegetationFeatureEnabled("MushroomGrowth")) return;
-        BlockEntityPlacer.move(world, originalPos.get(), blockPos);
-    }
+	@Inject(
+			method = "randomTick",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/server/level/ServerLevel;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
+					shift = At.Shift.AFTER
+			)
+	)
+	protected void postGrow(
+			BlockState state,
+			ServerLevel level,
+			BlockPos pos,
+			RandomSource random,
+			CallbackInfo ci,
+			@Local(ordinal = 1) BlockPos blockPos,
+			@Share("originalPos") LocalRef<BlockPos> originalPos
+	) {
+		if (!PandaBlockNameConfig.isVegetationFeatureEnabled("MushroomGrowth")) return;
+		BlockPos origin = originalPos.get();
+		if (origin != null) BlockEntityPlacer.move(level, origin, blockPos);
+	}
 }

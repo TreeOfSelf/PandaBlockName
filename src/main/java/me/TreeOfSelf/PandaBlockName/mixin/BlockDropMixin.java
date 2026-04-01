@@ -7,20 +7,21 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import me.TreeOfSelf.PandaBlockName.ItemData;
 import me.TreeOfSelf.PandaBlockName.PandaBlockNameConfig;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.context.LootWorldContext;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,208 +31,182 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mixin(value = net.minecraft.block.AbstractBlock.class, priority = 5000)
+@Mixin(value = BlockBehaviour.class, priority = 5000)
 public class BlockDropMixin {
 
+	@Unique
+	private ItemData panda_getItemData(net.minecraft.world.level.Level world, CompoundTag customData, int index) {
+		ItemData itemData = new ItemData();
+		String nameKey = "itemName_" + index;
+		String loreKey = "itemLore_" + index;
+		String customDataKey = "itemCustomData_" + index;
+		if (customData.contains(nameKey)) {
+			JsonElement jsonElement = JsonParser.parseString(customData.getString(nameKey).orElse(""));
+			DataResult<Pair<Component, JsonElement>> result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+			itemData.CustomName = result.getOrThrow().getFirst();
+		}
+		if (customData.contains(loreKey)) {
+			String[] loreString = customData.getString(loreKey).orElse("").split("\\{\\\\\"\\\\}");
+			List<Component> textList = new ArrayList<>();
+			for (String s : loreString) {
+				JsonElement jsonElement = JsonParser.parseString(s);
+				DataResult<Pair<Component, JsonElement>> result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+				textList.add(result.getOrThrow().getFirst());
+			}
+			itemData.Lore = new ItemLore(textList);
+		}
+		if (customData.contains(customDataKey)) {
+			itemData.CustomData = customData.getCompound(customDataKey).orElse(new CompoundTag());
+		}
+		return itemData;
+	}
 
-    @Unique
-    ItemData getItemData(World world, NbtCompound customData, int index){
-        ItemData itemData = new ItemData();
-        String nameKey = "itemName_"+index;
-        String loreKey = "itemLore_"+index;
-        String customDataKey = "itemCustomData_"+index;
-        
-        if (customData.contains(nameKey)) {
-            JsonElement jsonElement = JsonParser.parseString(customData.getString(nameKey).get());
-            DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-            itemData.CustomName = result.getOrThrow().getFirst();
-        }
+	@Unique
+	private void panda_addOrCombine(List<ItemStack> list, ItemStack itemStack) {
+		boolean add = true;
+		for (ItemStack item : list) {
+			if (item.getComponents().equals(itemStack.getComponents())) {
+				item.grow(1);
+				add = false;
+				break;
+			}
+		}
+		if (add) list.add(itemStack);
+	}
 
-        if (customData.contains(loreKey)) {
-            String[] loreString = customData.getString(loreKey).get().split("\\{\\\\\"\\\\}");
-            List<Text> textList = new ArrayList<>();
-            for (String s : loreString) {
-                JsonElement jsonElement = JsonParser.parseString(s);
-                DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-                textList.add(result.getOrThrow().getFirst());
-            }
-            itemData.Lore = new LoreComponent(textList);
-        }
-        
-        if (customData.contains(customDataKey)) {
-            itemData.CustomData = customData.getCompound(customDataKey).get();
-        }
-        
-        return itemData;
-    }
-
-    @Unique
-    private void addOrCombine(List<ItemStack> list, ItemStack itemStack) {
-
-        boolean add = true;
-        for (ItemStack item : list) {
-            if (item.getComponents().equals(itemStack.getComponents())) {
-                item.increment(1);
-                add = false;
-                break;
-            }
-        }
-
-        if (add) list.add(itemStack);
-    }
-
-    @Inject(method = "getDroppedStacks", at = @At(value = "TAIL"))
-    private void getDroppedStacks(BlockState state, LootWorldContext.Builder builder, CallbackInfoReturnable<List<ItemStack>> cir) {
-        if (!PandaBlockNameConfig.isFeatureEnabled("Block")) return;
-        
-        World world = builder.getWorld();
-        BlockEntity blockEntity = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
-        if (blockEntity == null){
-            blockEntity = builder.getWorld().getBlockEntity(BlockPos.ofFloored(builder.getOptional(LootContextParameters.ORIGIN)));
-        }
-        if (blockEntity != null) {
-
-            boolean multiple = state.contains(Properties.PICKLES) ||
-                    state.contains(Properties.CANDLES) ||
-                    state.contains(Properties.LAYERS) ||
-                    state.contains(Properties.SLAB_TYPE);
-
-            //Multiple
-            if (multiple) {
-
-                NbtCompound customData = null;
-                if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA))
-                    customData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-
-                List<ItemStack> items = cir.getReturnValue();
-                List<ItemStack> additionalItems = new ArrayList<>();
-
-                int maxPropertyValue = 1;
-                if (state.contains(Properties.PICKLES)) {
-                    maxPropertyValue = state.get(Properties.PICKLES);
-                } else if (state.contains(Properties.CANDLES)) {
-                    maxPropertyValue = state.get(Properties.CANDLES);
-                } else if (state.contains(Properties.LAYERS)) {
-                    maxPropertyValue = state.get(Properties.LAYERS);
-                } else if (state.contains(Properties.SLAB_TYPE)) {
-                    maxPropertyValue = 2;
-                }
-
-                int currentItemIndex = 1;
-
-                outerLoop:
-                for (ItemStack item : items) {
-                    while (item.getCount() > 0 && currentItemIndex <= maxPropertyValue) {
-                        //First item
-                        if (currentItemIndex == 1) {
-                            ItemStack newItem = null;
-                            boolean newItemChanged = false;
-                            if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
-                                newItem = item.copyWithCount(1);
-
-                                Text customName = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME);
-                                if (customName.getString().startsWith("{")) {
-                                    try {
-                                        JsonElement jsonElement = JsonParser.parseString(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString());
-                                        DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-                                        customName = result.getOrThrow().getFirst();
-                                    } catch (Exception ignored) {
-                                    }
-                                }
-
-                                newItem.set(DataComponentTypes.CUSTOM_NAME, customName);
-                                newItemChanged = true;
-                            }
-                            if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
-                                if (newItem == null) newItem = item.copyWithCount(1);
-                                newItem.set(DataComponentTypes.LORE, blockEntity.getComponents().get(DataComponentTypes.LORE));
-                                newItemChanged = true;
-                            }
-                            
-                            if (customData != null && customData.contains("itemCustomData_1")) {
-                                if (newItem == null) newItem = item.copyWithCount(1);
-                                NbtCompound firstItemCustomData = customData.getCompound("itemCustomData_1").get();
-                                newItem.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(firstItemCustomData));
-                                newItemChanged = true;
-                            }
-                            if (newItemChanged) {
-                                item.decrement(1);
-                                addOrCombine(additionalItems, newItem);
-                                if (item.getCount() == 0) items.remove(item);
-                            }
-                            //Non first-item
-                        } else {
-                            if (customData == null) break outerLoop;
-                            ItemStack newItem = null;
-                            boolean newItemChanged = false;
-                            ItemData itemData = getItemData(world, customData, currentItemIndex);
-                            if (itemData.CustomName != null) {
-                                newItem = item.copyWithCount(1);
-                                newItem.set(DataComponentTypes.CUSTOM_NAME, itemData.CustomName);
-                                newItemChanged = true;
-                            }
-                            if (itemData.Lore != null) {
-                                if (newItem == null) newItem = item.copyWithCount(1);
-                                newItem.set(DataComponentTypes.LORE, itemData.Lore);
-                                newItemChanged = true;
-                            }
-                            if (itemData.CustomData != null) {
-                                if (newItem == null) newItem = item.copyWithCount(1);
-                                newItem.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(itemData.CustomData));
-                                newItemChanged = true;
-                            }
-                            if (newItemChanged) {
-                                item.decrement(1);
-                                addOrCombine(additionalItems, newItem);
-                                if (item.getCount() == 0) items.remove(item);
-                            } else {
-                                break outerLoop;
-                            }
-                        }
-                        currentItemIndex++;
-                    }
-                }
-
-                items.addAll(additionalItems);
-
-            //Single
-            } else {
-                List<ItemStack> items = cir.getReturnValue();
-
-                if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_NAME)) {
-                    for (ItemStack item : items) {
-
-
-                        Text customName = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME);
-                        if (customName.getString().startsWith("{")) {
-                            try {
-                                JsonElement jsonElement = JsonParser.parseString(blockEntity.getComponents().get(DataComponentTypes.CUSTOM_NAME).getString());
-                                DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-                                customName = result.getOrThrow().getFirst();
-                            } catch (Exception ignored) {
-                            }
-                        }
-                        item.set(DataComponentTypes.CUSTOM_NAME,  customName);
-                    }
-                }
-                if (blockEntity.getComponents().contains(DataComponentTypes.LORE)) {
-                    for (ItemStack item : items) {
-                        item.set(DataComponentTypes.LORE,  blockEntity.getComponents().get(DataComponentTypes.LORE));
-                    }
-                }
-                
-                NbtCompound customData = null;
-                if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA))
-                    customData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-                
-                if (customData != null && customData.contains("itemCustomData_1")) {
-                    for (ItemStack item : items) {
-                        NbtCompound itemCustomData = customData.getCompound("itemCustomData_1").get();
-                        item.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(itemCustomData));
-                    }
-                }
-            }
-
-        }
-    }
+	@Inject(method = "getDrops", at = @At("TAIL"))
+	private void panda_getDrops(BlockState state, LootParams.Builder params, CallbackInfoReturnable<List<ItemStack>> cir) {
+		if (!PandaBlockNameConfig.isFeatureEnabled("Block")) return;
+		net.minecraft.server.level.ServerLevel world = params.getLevel();
+		BlockEntity blockEntity = params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+		if (blockEntity == null) {
+			Vec3 origin = params.getOptionalParameter(LootContextParams.ORIGIN);
+			if (origin != null) {
+				blockEntity = world.getBlockEntity(BlockPos.containing(origin));
+			}
+		}
+		if (blockEntity == null) return;
+		boolean multiple = state.hasProperty(BlockStateProperties.PICKLES)
+				|| state.hasProperty(BlockStateProperties.CANDLES)
+				|| state.hasProperty(BlockStateProperties.LAYERS)
+				|| state.hasProperty(BlockStateProperties.SLAB_TYPE);
+		if (multiple) {
+			CompoundTag customData = null;
+			if (blockEntity.components().has(DataComponents.CUSTOM_DATA)) {
+				customData = blockEntity.components().get(DataComponents.CUSTOM_DATA).copyTag();
+			}
+			List<ItemStack> items = cir.getReturnValue();
+			List<ItemStack> additionalItems = new ArrayList<>();
+			int maxPropertyValue = 1;
+			if (state.hasProperty(BlockStateProperties.PICKLES)) {
+				maxPropertyValue = state.getValue(BlockStateProperties.PICKLES);
+			} else if (state.hasProperty(BlockStateProperties.CANDLES)) {
+				maxPropertyValue = state.getValue(BlockStateProperties.CANDLES);
+			} else if (state.hasProperty(BlockStateProperties.LAYERS)) {
+				maxPropertyValue = state.getValue(BlockStateProperties.LAYERS);
+			} else if (state.hasProperty(BlockStateProperties.SLAB_TYPE)) {
+				maxPropertyValue = 2;
+			}
+			int currentItemIndex = 1;
+			outerLoop:
+			for (ItemStack item : new ArrayList<>(items)) {
+				while (item.getCount() > 0 && currentItemIndex <= maxPropertyValue) {
+					if (currentItemIndex == 1) {
+						ItemStack newItem = null;
+						boolean newItemChanged = false;
+						if (blockEntity.components().has(DataComponents.CUSTOM_NAME)) {
+							newItem = item.copyWithCount(1);
+							Component customName = blockEntity.components().get(DataComponents.CUSTOM_NAME);
+							if (customName.getString().startsWith("{")) {
+								try {
+									JsonElement jsonElement = JsonParser.parseString(blockEntity.components().get(DataComponents.CUSTOM_NAME).getString());
+									DataResult<Pair<Component, JsonElement>> result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+									customName = result.getOrThrow().getFirst();
+								} catch (Exception ignored) {
+								}
+							}
+							newItem.set(DataComponents.CUSTOM_NAME, customName);
+							newItemChanged = true;
+						}
+						if (blockEntity.components().has(DataComponents.LORE)) {
+							if (newItem == null) newItem = item.copyWithCount(1);
+							newItem.set(DataComponents.LORE, blockEntity.components().get(DataComponents.LORE));
+							newItemChanged = true;
+						}
+						if (customData != null && customData.contains("itemCustomData_1")) {
+							if (newItem == null) newItem = item.copyWithCount(1);
+							CompoundTag firstItemCustomData = customData.getCompoundOrEmpty("itemCustomData_1");
+							newItem.set(DataComponents.CUSTOM_DATA, CustomData.of(firstItemCustomData));
+							newItemChanged = true;
+						}
+						if (newItemChanged) {
+							item.shrink(1);
+							panda_addOrCombine(additionalItems, newItem);
+							if (item.getCount() == 0) items.remove(item);
+						}
+					} else {
+						if (customData == null) break outerLoop;
+						ItemStack newItem = null;
+						boolean newItemChanged = false;
+						ItemData itemData = panda_getItemData(world, customData, currentItemIndex);
+						if (itemData.CustomName != null) {
+							newItem = item.copyWithCount(1);
+							newItem.set(DataComponents.CUSTOM_NAME, itemData.CustomName);
+							newItemChanged = true;
+						}
+						if (itemData.Lore != null) {
+							if (newItem == null) newItem = item.copyWithCount(1);
+							newItem.set(DataComponents.LORE, itemData.Lore);
+							newItemChanged = true;
+						}
+						if (itemData.CustomData != null) {
+							if (newItem == null) newItem = item.copyWithCount(1);
+							newItem.set(DataComponents.CUSTOM_DATA, CustomData.of(itemData.CustomData));
+							newItemChanged = true;
+						}
+						if (newItemChanged) {
+							item.shrink(1);
+							panda_addOrCombine(additionalItems, newItem);
+							if (item.getCount() == 0) items.remove(item);
+						} else {
+							break outerLoop;
+						}
+					}
+					currentItemIndex++;
+				}
+			}
+			items.addAll(additionalItems);
+		} else {
+			List<ItemStack> items = cir.getReturnValue();
+			if (blockEntity.components().has(DataComponents.CUSTOM_NAME)) {
+				for (ItemStack item : items) {
+					Component customName = blockEntity.components().get(DataComponents.CUSTOM_NAME);
+					if (customName.getString().startsWith("{")) {
+						try {
+							JsonElement jsonElement = JsonParser.parseString(blockEntity.components().get(DataComponents.CUSTOM_NAME).getString());
+							DataResult<Pair<Component, JsonElement>> result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+							customName = result.getOrThrow().getFirst();
+						} catch (Exception ignored) {
+						}
+					}
+					item.set(DataComponents.CUSTOM_NAME, customName);
+				}
+			}
+			if (blockEntity.components().has(DataComponents.LORE)) {
+				for (ItemStack item : items) {
+					item.set(DataComponents.LORE, blockEntity.components().get(DataComponents.LORE));
+				}
+			}
+			CompoundTag customData = null;
+			if (blockEntity.components().has(DataComponents.CUSTOM_DATA)) {
+				customData = blockEntity.components().get(DataComponents.CUSTOM_DATA).copyTag();
+			}
+			if (customData != null && customData.contains("itemCustomData_1")) {
+				for (ItemStack item : items) {
+					CompoundTag itemCustomData = customData.getCompoundOrEmpty("itemCustomData_1");
+					item.set(DataComponents.CUSTOM_DATA, CustomData.of(itemCustomData));
+				}
+			}
+		}
+	}
 }

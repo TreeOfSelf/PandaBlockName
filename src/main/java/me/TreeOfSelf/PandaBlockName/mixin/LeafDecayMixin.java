@@ -1,12 +1,12 @@
 package me.TreeOfSelf.PandaBlockName.mixin;
 
 import me.TreeOfSelf.PandaBlockName.PandaBlockNameConfig;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.LeavesBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,19 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LeavesBlock.class)
 public abstract class LeafDecayMixin {
 
-    @Inject(method = "randomTick", at = @At(value = "HEAD"))
-    private void onRandomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (!PandaBlockNameConfig.isFeatureEnabled("Block")) {
-            return;
-        }
-
-        // Check if leaves will decay (distance is at max and not persistent)
-        if (state.get(LeavesBlock.DISTANCE) == 7 && !state.get(LeavesBlock.PERSISTENT)) {
-            // Remove the block entity before the leaves decay
-            BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity != null) {
-                world.removeBlockEntity(pos);
-            }
-        }
-    }
+	@Inject(method = "randomTick", at = @At("HEAD"))
+	private void onRandomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo ci) {
+		if (!PandaBlockNameConfig.isFeatureEnabled("Block")) return;
+		if (state.getValue(LeavesBlock.DISTANCE) == 7 && !state.getValue(LeavesBlock.PERSISTENT)) {
+			BlockEntity blockEntity = level.getBlockEntity(pos);
+			if (blockEntity != null) {
+				level.removeBlockEntity(pos);
+			}
+		}
+	}
 }

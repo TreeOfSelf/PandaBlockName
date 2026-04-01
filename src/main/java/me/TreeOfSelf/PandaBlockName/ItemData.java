@@ -1,11 +1,11 @@
 package me.TreeOfSelf.PandaBlockName;
 
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.component.ItemLore;
 
 public class ItemData {
-    public Text CustomName;
-    public LoreComponent Lore;
-    public NbtCompound CustomData;
+	public Component CustomName;
+	public ItemLore Lore;
+	public CompoundTag CustomData;
 }
