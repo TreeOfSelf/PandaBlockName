@@ -1,103 +1,99 @@
 package me.TreeOfSelf.PandaBlockName.mixin;
 
-import com.llamalad7.mixinextras.sugar.Local;
 import me.TreeOfSelf.PandaBlockName.PandaBlockNameConfig;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.inventory.RecipeInputInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.ResultContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-import javax.xml.crypto.Data;
-import java.util.Optional;
+@Mixin(CraftingMenu.class)
+public abstract class CraftingScreenHandlerMixin {
 
-@Mixin(CraftingScreenHandler.class)
-public abstract class CraftingScreenHandlerMixin extends ScreenHandler {
-
-
-
-
-    protected CraftingScreenHandlerMixin(@Nullable ScreenHandlerType<?> type, int syncId) {
-        super(type, syncId);
-    }
-
-    @Inject(method = "updateResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/CraftingResultInventory;setStack(ILnet/minecraft/item/ItemStack;)V"), cancellable = true)
-    private static void onUpdateResult(ScreenHandler handler, ServerWorld world, PlayerEntity player, RecipeInputInventory craftingInventory, CraftingResultInventory resultInventory, RecipeEntry<CraftingRecipe> recipe, CallbackInfo ci, @Local(ordinal = 0) ItemStack itemStack) {
-        if (!PandaBlockNameConfig.isFeatureEnabled("Crafting")) return;
-        
-        Text customName = null;
-        LoreComponent customLore = null;
-        NbtComponent customData = null;
-        boolean allSame = true;
-        for (int index = 0; index < craftingInventory.size() ; index ++){
-            ItemStack item = craftingInventory.getStack(index);
-            if (item.getItem() == Items.AIR) continue;
-
-            if (customName == null && customLore == null && customData == null) {
-                if(item.contains(DataComponentTypes.CUSTOM_NAME)) customName = item.get(DataComponentTypes.CUSTOM_NAME);
-                if (item.contains(DataComponentTypes.LORE)) customLore = item.get(DataComponentTypes.LORE);
-                if (item.contains(DataComponentTypes.CUSTOM_DATA)) customData = item.get(DataComponentTypes.CUSTOM_DATA);
-                if (customName == null && customLore == null && customData == null) break;
-            } else {
-                if (customName != null) {
-                    if (item.contains(DataComponentTypes.CUSTOM_NAME)) {
-                        if (!item.get(DataComponentTypes.CUSTOM_NAME).equals(customName)) {
-                            allSame = false;
-                            break;
-                        }
-                    } else {
-                        allSame = false;
-                        break;
-                    }
-                }
-                if (customLore != null) {
-                    if (item.contains(DataComponentTypes.LORE)) {
-                        if (!item.get(DataComponentTypes.LORE).equals(customLore)) {
-                            allSame = false;
-                            break;
-                        }
-                    } else {
-                        allSame = false;
-                        break;
-                    }
-                }
-                if (customData != null) {
-                    if (item.contains(DataComponentTypes.CUSTOM_DATA)) {
-                        if (!item.get(DataComponentTypes.CUSTOM_DATA).equals(customData)) {
-                            allSame = false;
-                            break;
-                        }
-                    } else {
-                        allSame = false;
-                        break;
-                    }
-                }
-
-            }
-        }
-
-        if (allSame) {
-            if (customName != null) itemStack.set(DataComponentTypes.CUSTOM_NAME, customName);
-            if (customLore != null) itemStack.set(DataComponentTypes.LORE, customLore);
-            if (customData != null) itemStack.set(DataComponentTypes.CUSTOM_DATA, customData);
-        }
-    }
+	@ModifyArgs(
+			method = "slotChangedCraftingGrid",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/world/inventory/ResultContainer;setItem(ILnet/minecraft/world/item/ItemStack;)V"
+			)
+	)
+	private static void panda_mergeCraftingComponents(
+			Args args,
+			AbstractContainerMenu menu,
+			ServerLevel level,
+			Player player,
+			CraftingContainer container,
+			ResultContainer resultSlots,
+			@Nullable RecipeHolder<CraftingRecipe> recipeHint
+	) {
+		if (!PandaBlockNameConfig.isFeatureEnabled("Crafting")) return;
+		ItemStack itemStack = args.get(1);
+		if (itemStack.isEmpty()) return;
+		net.minecraft.network.chat.Component customName = null;
+		ItemLore customLore = null;
+		CustomData customData = null;
+		boolean allSame = true;
+		for (int index = 0; index < container.getContainerSize(); index++) {
+			ItemStack item = container.getItem(index);
+			if (item.isEmpty()) continue;
+			if (customName == null && customLore == null && customData == null) {
+				if (item.has(DataComponents.CUSTOM_NAME)) customName = item.get(DataComponents.CUSTOM_NAME);
+				if (item.has(DataComponents.LORE)) customLore = item.get(DataComponents.LORE);
+				if (item.has(DataComponents.CUSTOM_DATA)) customData = item.get(DataComponents.CUSTOM_DATA);
+				if (customName == null && customLore == null && customData == null) break;
+			} else {
+				if (customName != null) {
+					if (item.has(DataComponents.CUSTOM_NAME)) {
+						if (!item.get(DataComponents.CUSTOM_NAME).equals(customName)) {
+							allSame = false;
+							break;
+						}
+					} else {
+						allSame = false;
+						break;
+					}
+				}
+				if (customLore != null) {
+					if (item.has(DataComponents.LORE)) {
+						if (!item.get(DataComponents.LORE).equals(customLore)) {
+							allSame = false;
+							break;
+						}
+					} else {
+						allSame = false;
+						break;
+					}
+				}
+				if (customData != null) {
+					if (item.has(DataComponents.CUSTOM_DATA)) {
+						if (!item.get(DataComponents.CUSTOM_DATA).equals(customData)) {
+							allSame = false;
+							break;
+						}
+					} else {
+						allSame = false;
+						break;
+					}
+				}
+			}
+		}
+		if (!allSame) return;
+		ItemStack out = itemStack.copy();
+		if (customName != null) out.set(DataComponents.CUSTOM_NAME, customName);
+		if (customLore != null) out.set(DataComponents.LORE, customLore);
+		if (customData != null) out.set(DataComponents.CUSTOM_DATA, customData);
+		args.set(1, out);
+	}
 }

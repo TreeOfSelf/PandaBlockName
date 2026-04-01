@@ -3,231 +3,214 @@ package me.TreeOfSelf.PandaBlockName;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.block.BedBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.spongepowered.asm.mixin.Unique;
-
-
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class BlockEntityPlacer {
 
-    @Unique
-    private static String encodeListTextToString(List<Text> texts, DynamicRegistryManager registryManager) {
+	@Unique
+	private static String encodeListTextToString(List<Component> texts, RegistryAccess registryAccess) {
+		StringBuilder combined = new StringBuilder();
+		for (int i = 0; i < texts.size(); i++) {
+			DataResult<JsonElement> json = ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, texts.get(i));
+			String string = json.getOrThrow().toString();
+			combined.append(string);
+			if (i < texts.size() - 1) {
+				combined.append("{\\\"\\}");
+			}
+		}
+		return combined.toString();
+	}
 
-        StringBuilder combined = new StringBuilder();
+	private static String getStringRef(String checkString, CompoundTag customData) {
+		int checkNumber = 2;
+		while (customData.contains(checkString + checkNumber)) checkNumber++;
+		return checkString + checkNumber;
+	}
 
-        for (int i = 0; i < texts.size(); i++) {
+	@Unique
+	private static DataComponentMap setAdditionalData(Level level, DataComponentMap prevComponenetMap, BlockState blockState, ItemStack itemStack, IntegerProperty property) {
+		CompoundTag customData = new CompoundTag();
+		if (prevComponenetMap.has(DataComponents.CUSTOM_DATA)) {
+			customData = prevComponenetMap.get(DataComponents.CUSTOM_DATA).copyTag();
+		}
 
-            DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, texts.get(i));
-            String string = json.getOrThrow().toString();
+		int currentPropertyValue = blockState.getValue(property);
+		String itemIndex = String.valueOf(currentPropertyValue);
 
-            combined.append(string);
-            if (i < texts.size() - 1) {
-                combined.append("{\\\"\\}");
-            }
-        }
+		if (itemStack.has(DataComponents.CUSTOM_NAME)) {
+			DataResult<JsonElement> json = ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME));
+			String string = json.getOrThrow().toString();
+			customData.putString("itemName_" + itemIndex, string);
+		}
+		if (itemStack.has(DataComponents.LORE) && !itemStack.get(DataComponents.LORE).lines().isEmpty()) {
+			String jsonString = encodeListTextToString(itemStack.get(DataComponents.LORE).lines(), level.registryAccess());
+			customData.putString("itemLore_" + itemIndex, jsonString);
+		}
 
-        return combined.toString();
-    }
+		if (itemStack.has(DataComponents.CUSTOM_DATA)) {
+			CompoundTag itemCustomData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
+			customData.put("itemCustomData_" + itemIndex, itemCustomData);
+		}
 
-    private static String getStringRef(String checkString, NbtCompound customData){
-        int checkNumber = 2;
-        while (customData.contains(checkString+checkNumber)) checkNumber++;
-        return checkString+checkNumber;
-    }
+		DataComponentMap.Builder componentMapBuilder = DataComponentMap.builder();
+		componentMapBuilder.addAll(prevComponenetMap);
+		componentMapBuilder.set(DataComponents.CUSTOM_DATA, CustomData.of(customData));
+		return componentMapBuilder.build();
+	}
 
-    @Unique
-    private static ComponentMap setAdditionalData(World world, ComponentMap prevComponenetMap, BlockState blockState, ItemStack itemStack, IntProperty property){
-        NbtCompound customData = new NbtCompound();
-        if (prevComponenetMap.contains(DataComponentTypes.CUSTOM_DATA)) {
-            customData = prevComponenetMap.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-        }
+	public static void move(Level level, BlockPos moveFrom, BlockPos moveTo) {
+		BlockEntity blockEntity = level.getBlockEntity(moveFrom);
+		if (blockEntity instanceof EmptyBlockEntity) {
+			level.setBlockEntity(new EmptyBlockEntity(moveTo, level.getBlockState(moveTo)));
+			BlockEntity moveToEntity = level.getBlockEntity(moveTo);
+			if (moveToEntity != null) moveToEntity.setComponents(blockEntity.components());
+		}
+	}
 
-        int currentPropertyValue = blockState.get(property);
-        String itemIndex = String.valueOf(currentPropertyValue);
+	public static void move(LevelAccessor world, BlockPos moveFrom, BlockPos moveTo) {
+		BlockEntity blockEntity = world.getBlockEntity(moveFrom);
+		if (blockEntity instanceof EmptyBlockEntity) {
+			if (world.getServer() == null) return;
 
-        if (itemStack.contains(DataComponentTypes.CUSTOM_NAME)) {
-            DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponentTypes.CUSTOM_NAME));
-            String string = json.getOrThrow().toString();
-            customData.putString("itemName_" + itemIndex, string);
-        }
-        if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
-            String jsonString = encodeListTextToString(itemStack.get(DataComponentTypes.LORE).lines(),world.getRegistryManager());
-            customData.putString("itemLore_" + itemIndex, jsonString);
-        }
+			AtomicReference<ServerLevel> savedWorld = new AtomicReference<>();
+			world.getServer().getAllLevels().forEach(serverWorld -> {
+				if (serverWorld.dimension() == resolveDimension(world)) {
+					savedWorld.set(serverWorld);
+				}
+			});
 
-        if (itemStack.contains(DataComponentTypes.CUSTOM_DATA)) {
-            NbtCompound itemCustomData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-            customData.put("itemCustomData_" + itemIndex, itemCustomData);
-        }
+			ServerLevel savedWorldReference = savedWorld.get();
+			if (savedWorldReference != null) {
+				savedWorldReference.setBlockEntity(new EmptyBlockEntity(moveTo, savedWorldReference.getBlockState(moveTo)));
+				BlockEntity moveToEntity = savedWorldReference.getBlockEntity(moveTo);
+				if (moveToEntity != null) moveToEntity.setComponents(blockEntity.components());
+			}
+		}
+	}
 
-        ComponentMap.Builder componentMapBuilder = ComponentMap.builder();
-        componentMapBuilder.addAll(prevComponenetMap);
-        componentMapBuilder.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(customData));
-        return componentMapBuilder.build();
-    }
+	private static net.minecraft.resources.ResourceKey<Level> resolveDimension(LevelAccessor world) {
+		if (world instanceof Level level) {
+			return level.dimension();
+		}
+		if (world instanceof net.minecraft.world.level.ServerLevelAccessor sla) {
+			return sla.getLevel().dimension();
+		}
+		return Level.OVERWORLD;
+	}
 
-    public static void move(World world, BlockPos moveFrom, BlockPos moveTo) {
-        BlockEntity blockEntity = world.getBlockEntity(moveFrom);
-        if (blockEntity instanceof EmptyBlockEntity) {
-            world.addBlockEntity(new EmptyBlockEntity(moveTo,world.getBlockState(moveTo)));
-            BlockEntity moveToEntity = world.getBlockEntity(moveTo);
-            if (moveToEntity != null)  moveToEntity.setComponents(blockEntity.getComponents());
-        }
-    }
-    public static void move(WorldAccess world, BlockPos moveFrom, BlockPos moveTo) {
-        BlockEntity blockEntity = world.getBlockEntity(moveFrom);
-        if (blockEntity instanceof EmptyBlockEntity) {
-            AtomicReference<ServerWorld> savedWorld = new AtomicReference<>();
+	public static void place(Level world, BlockState prevBlockState, BlockState blockState, BlockPos blockPos, ItemStack itemStack, DataComponentMap prevComponentMap) {
+		if (prevBlockState.getBlock() == blockState.getBlock()) {
+			BlockEntity prevBlocKEntity = world.getBlockEntity(blockPos);
+			if (prevBlocKEntity != null) {
+				if (blockState.hasProperty(BlockStateProperties.PICKLES)) {
+					DataComponentMap newComponentMap = setAdditionalData(world, prevComponentMap, blockState, itemStack, BlockStateProperties.PICKLES);
+					prevBlocKEntity.setComponents(newComponentMap);
+					return;
+				} else if (blockState.hasProperty(BlockStateProperties.LAYERS)) {
+					DataComponentMap newComponentMap = setAdditionalData(world, prevComponentMap, blockState, itemStack, BlockStateProperties.LAYERS);
+					prevBlocKEntity.setComponents(newComponentMap);
+					return;
+				} else if (blockState.hasProperty(BlockStateProperties.CANDLES)) {
+					DataComponentMap newComponentMap = setAdditionalData(world, prevComponentMap, blockState, itemStack, BlockStateProperties.CANDLES);
+					prevBlocKEntity.setComponents(newComponentMap);
+					return;
+				} else if (blockState.hasProperty(BlockStateProperties.SLAB_TYPE)) {
+					CompoundTag customData = new CompoundTag();
+					if (prevComponentMap.has(DataComponents.CUSTOM_DATA)) {
+						customData = prevComponentMap.get(DataComponents.CUSTOM_DATA).copyTag();
+					}
 
-           if (world.getServer() == null) return;
+					if (itemStack.has(DataComponents.CUSTOM_NAME)) {
+						DataResult<JsonElement> json = ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponents.CUSTOM_NAME));
+						String string = json.getOrThrow().toString();
+						customData.putString("itemName_2", string);
+					}
+					if (itemStack.has(DataComponents.LORE) && !itemStack.get(DataComponents.LORE).lines().isEmpty()) {
+						String jsonString = encodeListTextToString(itemStack.get(DataComponents.LORE).lines(), world.registryAccess());
+						customData.putString("itemLore_2", jsonString);
+					}
 
-           world.getServer().getWorlds().forEach(serverWorld -> {
-                if (serverWorld.getDimension() == world.getDimension()) {
-                    savedWorld.set(serverWorld);
-                }
-            });
+					if (itemStack.has(DataComponents.CUSTOM_DATA)) {
+						CompoundTag itemCustomData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
+						customData.put("itemCustomData_2", itemCustomData);
+					}
 
-            ServerWorld savedWorldReference = savedWorld.get();
-            if (savedWorldReference != null) {
-                savedWorldReference.addBlockEntity(new EmptyBlockEntity(moveTo,savedWorldReference.getBlockState(moveTo)));
-                BlockEntity moveToEntity = savedWorldReference.getBlockEntity(moveTo);
-                if (moveToEntity != null)  moveToEntity.setComponents(blockEntity.getComponents());
-            }
-        }
-    }
+					DataComponentMap.Builder componentMapBuilder = DataComponentMap.builder();
+					componentMapBuilder.addAll(prevComponentMap);
+					componentMapBuilder.set(DataComponents.CUSTOM_DATA, CustomData.of(customData));
+					prevBlocKEntity.setComponents(componentMapBuilder.build());
+					return;
+				} else {
+					prevBlocKEntity.setComponents(prevComponentMap);
+					return;
+				}
+			}
+		}
 
+		if (itemStack.has(DataComponents.CUSTOM_NAME)
+				|| (itemStack.has(DataComponents.LORE) && !itemStack.get(DataComponents.LORE).lines().isEmpty())) {
 
+			BlockPos checkPos = blockPos;
 
+			if (blockState.hasProperty(BedBlock.PART)) {
+				checkPos = checkPos.relative(BedBlock.getConnectedDirection(blockState));
+			}
 
-    public static void place(World world, BlockState prevBlockState, BlockState blockState,BlockPos blockPos, ItemStack itemStack, ComponentMap prevComponentMap ) {
+			if (blockState.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
+				if (blockState.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) {
+					checkPos = checkPos.relative(Direction.DOWN);
+				}
+			}
 
-        //Don't change if the block hasn't changed (fix this for slabs)
-        if (prevBlockState.getBlock() == blockState.getBlock()) {
-            BlockEntity prevBlocKEntity = world.getBlockEntity(blockPos);
-            if (prevBlocKEntity != null) {
+			if (world.getBlockEntity(checkPos) == null) {
+				world.setBlockEntity(new EmptyBlockEntity(checkPos, blockState));
+			}
 
-                //Handle Pickles (lol)
-                if (blockState.contains(Properties.PICKLES)){
-                    ComponentMap newComponentMap = setAdditionalData(world, prevComponentMap, blockState, itemStack, Properties.PICKLES);
-                    prevBlocKEntity.setComponents(newComponentMap);
-                    return;
-                }
-                //Handle layers
-                else if (blockState.contains(Properties.LAYERS)){
-                    ComponentMap newComponentMap = setAdditionalData(world, prevComponentMap, blockState, itemStack, Properties.LAYERS);
-                    prevBlocKEntity.setComponents(newComponentMap);
-                    return;
-                }
-                //Handle Candles (lol)
-                else if (blockState.contains(Properties.CANDLES)){
-                    ComponentMap newComponentMap = setAdditionalData(world, prevComponentMap, blockState, itemStack, Properties.CANDLES);
-                    prevBlocKEntity.setComponents(newComponentMap);
-                    return;
-                    //Handle Slabs
-                }  else if (blockState.contains(Properties.SLAB_TYPE)){
+			BlockEntity blockEntity = world.getBlockEntity(checkPos);
 
-                    NbtCompound customData = new NbtCompound();
-                    if (prevComponentMap.contains(DataComponentTypes.CUSTOM_DATA)) {
-                        customData = prevComponentMap.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-                    }
+			DataComponentMap.Builder newBlockEntityComponents = DataComponentMap.builder();
+			newBlockEntityComponents.addAll(blockEntity.components());
 
-                    if (itemStack.contains(DataComponentTypes.CUSTOM_NAME)) {
+			if (itemStack.has(DataComponents.CUSTOM_NAME)) {
+				newBlockEntityComponents.set(DataComponents.CUSTOM_NAME, itemStack.get(DataComponents.CUSTOM_NAME));
+			}
+			if (itemStack.has(DataComponents.LORE) && !itemStack.get(DataComponents.LORE).lines().isEmpty()) {
+				newBlockEntityComponents.set(DataComponents.LORE, itemStack.get(DataComponents.LORE));
+			}
 
-                        DataResult<JsonElement> json = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, itemStack.get(DataComponentTypes.CUSTOM_NAME));
-                        String string = json.getOrThrow().toString();
-                        customData.putString("itemName_2", string);
-                    }
-                    if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
-                        String jsonString = encodeListTextToString(itemStack.get(DataComponentTypes.LORE).lines(),world.getRegistryManager());
-                        customData.putString("itemLore_2",jsonString);
-                    }
+			if (itemStack.has(DataComponents.CUSTOM_DATA)) {
+				CompoundTag existingCustomData = new CompoundTag();
+				if (blockEntity.components().has(DataComponents.CUSTOM_DATA)) {
+					existingCustomData = blockEntity.components().get(DataComponents.CUSTOM_DATA).copyTag();
+				}
+				CompoundTag itemCustomData = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
+				existingCustomData.put("itemCustomData_1", itemCustomData);
+				newBlockEntityComponents.set(DataComponents.CUSTOM_DATA, CustomData.of(existingCustomData));
+			}
 
-                    if (itemStack.contains(DataComponentTypes.CUSTOM_DATA)) {
-                        NbtCompound itemCustomData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-                        customData.put("itemCustomData_2", itemCustomData);
-                    }
-
-                    ComponentMap.Builder componentMapBuilder = ComponentMap.builder();
-                    componentMapBuilder.addAll(prevComponentMap);
-                    componentMapBuilder.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(customData));
-                    prevBlocKEntity.setComponents(componentMapBuilder.build());
-                    return;
-                }else {
-                    prevBlocKEntity.setComponents(prevComponentMap);
-                    return;
-                }
-            }
-
-        }
-
-        if (itemStack.contains(DataComponentTypes.CUSTOM_NAME) ||
-                (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty())) {
-
-            BlockPos checkPos = blockPos;
-
-            //If bed
-            if (blockState.contains(Properties.BED_PART)) {
-                checkPos = checkPos.offset(BedBlock.getOppositePartDirection(blockState));
-            }
-
-            //Handle double places (lilac/doors)
-            if (blockState.contains(Properties.DOUBLE_BLOCK_HALF)) {
-                if (blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER){
-                    checkPos = checkPos.offset(Direction.DOWN);
-                }
-            }
-
-            //Create entity if one doesn't already exist
-            if (world.getBlockEntity(checkPos) == null) {
-                world.addBlockEntity(new EmptyBlockEntity(checkPos, blockState));
-            }
-
-
-            BlockEntity blockEntity = world.getBlockEntity(checkPos);
-
-            ComponentMap.Builder newBlockEntityComponents = ComponentMap.builder();
-            newBlockEntityComponents.addAll(blockEntity.getComponents());
-
-            if (itemStack.contains(DataComponentTypes.CUSTOM_NAME)) {
-                newBlockEntityComponents.add(DataComponentTypes.CUSTOM_NAME, itemStack.get(DataComponentTypes.CUSTOM_NAME));
-            }
-            if (itemStack.contains(DataComponentTypes.LORE) && !itemStack.get(DataComponentTypes.LORE).lines().isEmpty()) {
-                newBlockEntityComponents.add(DataComponentTypes.LORE, itemStack.get(DataComponentTypes.LORE));
-            }
-
-            if (itemStack.contains(DataComponentTypes.CUSTOM_DATA)) {
-                NbtCompound existingCustomData = new NbtCompound();
-                if (blockEntity.getComponents().contains(DataComponentTypes.CUSTOM_DATA)) {
-                    existingCustomData = blockEntity.getComponents().get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-                }
-                NbtCompound itemCustomData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-                existingCustomData.put("itemCustomData_1", itemCustomData);
-                newBlockEntityComponents.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(existingCustomData));
-            }
-
-            blockEntity.setComponents(newBlockEntityComponents.build());
-
-        }
-    }
+			blockEntity.setComponents(newBlockEntityComponents.build());
+		}
+	}
 }

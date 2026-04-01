@@ -2,20 +2,27 @@ package me.TreeOfSelf.PandaBlockName.mixin;
 
 import me.TreeOfSelf.PandaBlockName.BlockEntityPlacer;
 import me.TreeOfSelf.PandaBlockName.PandaBlockNameConfig;
-import net.minecraft.block.BambooShootBlock;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BambooSaplingBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(BambooShootBlock.class)
+@Mixin(BambooSaplingBlock.class)
 public class BambooGrowMixin {
-    @Inject(method = "grow(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER))
-    protected void grow(World world, BlockPos pos, CallbackInfo ci) {
-        if (!PandaBlockNameConfig.isVegetationFeatureEnabled("BambooGrowth")) return;
-        BlockEntityPlacer.move(world, pos, pos.up());
-    }
 
+	@Inject(
+			method = "growBamboo",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
+					shift = At.Shift.AFTER
+			)
+	)
+	protected void growBamboo(Level level, BlockPos pos, CallbackInfo ci) {
+		if (!PandaBlockNameConfig.isVegetationFeatureEnabled("BambooGrowth")) return;
+		BlockEntityPlacer.move(level, pos, pos.above());
+	}
 }

@@ -1,8 +1,9 @@
 package me.TreeOfSelf.PandaBlockName;
 
-import net.minecraft.component.ComponentMap;
+import net.minecraft.core.component.DataComponentMap;
 
 public interface EndermanEntityAccess {
-    void setItemComponentMap(ComponentMap componentMap);
-    ComponentMap getItemComponentMap();
+	void setItemComponentMap(DataComponentMap componentMap);
+
+	DataComponentMap getItemComponentMap();
 }
