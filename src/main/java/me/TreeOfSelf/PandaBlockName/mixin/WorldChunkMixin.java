@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
@@ -28,6 +29,17 @@ public abstract class WorldChunkMixin {
 	@Shadow
 	public abstract BlockState getBlockState(BlockPos pos);
 
+	@Inject(method = "setBlockState", at = @At("HEAD"))
+	public void preSetBlockState(BlockPos pos, BlockState state, int flags, CallbackInfoReturnable<BlockState> cir) {
+		if (state.hasBlockEntity()) {
+			BlockEntity existing = this.getBlockEntities().get(pos);
+			if (existing instanceof EmptyBlockEntity) {
+				existing.setRemoved();
+				this.getBlockEntities().remove(pos);
+			}
+		}
+	}
+
 	@Inject(method = "setBlockEntity", at = @At("HEAD"), cancellable = true)
 	public void setBlockEntity(BlockEntity blockEntity, CallbackInfo ci) {
 		if (blockEntity instanceof EmptyBlockEntity) {
@@ -43,30 +55,8 @@ public abstract class WorldChunkMixin {
 				}
 				ci.cancel();
 			} else {
-				BlockState blockState2 = blockEntity.getBlockState();
-				if (blockState != blockState2) {
-					if (!blockEntity.getType().isValid(blockState)) {
-						blockEntity.setBlockState(blockState);
-						blockEntity.setLevel(this.level);
-						blockEntity.clearRemoved();
-						BlockEntity blockEntity2 = this.getBlockEntities().put(blockPos.immutable(), blockEntity);
-						if (blockEntity2 != null && blockEntity2 != blockEntity) {
-							blockEntity2.setRemoved();
-						}
-						ci.cancel();
-						return;
-					}
-					if (blockState.getBlock() != blockState2.getBlock()) {
-						blockEntity.setBlockState(blockState);
-						blockEntity.setLevel(this.level);
-						blockEntity.clearRemoved();
-						BlockEntity blockEntity2 = this.getBlockEntities().put(blockPos.immutable(), blockEntity);
-						if (blockEntity2 != null && blockEntity2 != blockEntity) {
-							blockEntity2.setRemoved();
-						}
-						ci.cancel();
-					}
-				}
+				// Block has its own native BE — never store EmptyBlockEntity here
+				ci.cancel();
 			}
 		}
 	}

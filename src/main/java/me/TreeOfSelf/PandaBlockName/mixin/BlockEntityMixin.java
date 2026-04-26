@@ -15,6 +15,6 @@ public class BlockEntityMixin {
 	@Inject(method = "validateBlockState", at = @At("HEAD"), cancellable = true)
 	private void panda_validateBlockState(BlockState blockState, CallbackInfo ci) {
 		if (!PandaBlockNameConfig.isFeatureEnabled("Block")) return;
-		if ((Object) this instanceof EmptyBlockEntity) ci.cancel();
+		if ((Object) this instanceof EmptyBlockEntity && !blockState.hasBlockEntity()) ci.cancel();
 	}
 }
