@@ -184,11 +184,12 @@ public class BlockEntityPlacer {
 				}
 			}
 
-			if (world.getBlockEntity(checkPos) == null) {
+			if (world.getBlockEntity(checkPos) == null && !blockState.hasBlockEntity()) {
 				world.setBlockEntity(new EmptyBlockEntity(checkPos, blockState));
 			}
 
 			BlockEntity blockEntity = world.getBlockEntity(checkPos);
+			if (blockEntity == null) return;
 
 			DataComponentMap.Builder newBlockEntityComponents = DataComponentMap.builder();
 			newBlockEntityComponents.addAll(blockEntity.components());
