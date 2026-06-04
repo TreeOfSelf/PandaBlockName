@@ -20,7 +20,6 @@
     "HugeBrownMushroomCapMixin",
     "HugeFungusGrowMixin",
     "HugeRedMushroomCapMixin",
-    "LeafDecayMixin",
     "MushroomGrowMixin",
     "PumpkinShearMixin",
     "SaplingGrowMixin",
