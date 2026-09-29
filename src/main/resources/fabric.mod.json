@@ -5,7 +5,7 @@
 	"name": "panda-block-name",
 	"description": "Save custom names on blocks when placing and breaking them.",
 	"authors": [
-		"Sebastian420"
+		"TreeOfSelf"
 	],
 	"contact": {
 		"homepage": "",
@@ -24,7 +24,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"minecraft": ">=26.2",
+		"minecraft": ">=26.3",
 		"java": ">=25",
 		"fabric-api": "*"
 	},

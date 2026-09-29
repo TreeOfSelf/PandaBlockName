@@ -7,9 +7,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,10 +29,11 @@ public class SaplingGrowMixin {
 			)
 	)
 	private void panda_afterTreeGenerated(
-			FeaturePlaceContext<TreeConfiguration> context,
+			WorldGenLevel level,
+			ChunkGenerator chunkGenerator,
+			RandomSource random,
+			BlockPos origin,
 			CallbackInfoReturnable<Boolean> cir,
-			@Local(name = "level") WorldGenLevel level,
-			@Local(name = "origin") BlockPos origin,
 			@Local(name = "rootPositions") Set<BlockPos> rootPositions,
 			@Local(name = "trunks") Set<BlockPos> trunks,
 			@Local(name = "foliage") Set<BlockPos> foliage,

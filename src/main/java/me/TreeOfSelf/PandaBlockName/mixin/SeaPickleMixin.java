@@ -6,6 +6,7 @@ import me.TreeOfSelf.PandaBlockName.PandaBlockNameConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.SeaPickleBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +21,7 @@ public class SeaPickleMixin {
 			method = "performBonemeal",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/server/level/ServerLevel;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
+					target = "Lnet/minecraft/server/level/ServerLevel;setBlockAndUpdate(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z",
 					ordinal = 0,
 					shift = At.Shift.AFTER
 			)
@@ -30,6 +31,7 @@ public class SeaPickleMixin {
 			RandomSource random,
 			BlockPos pos,
 			BlockState state,
+			BonemealSource source,
 			CallbackInfo ci,
 			@Local(name = "position") BlockPos position
 	) {
