@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.feature.HugeFungusFeature;
-import net.minecraft.world.level.levelgen.feature.HugeFungusConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,14 +19,13 @@ public class HugeFungusGrowMixin {
 			method = "placeStem",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/world/level/WorldGenLevel;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
+					target = "Lnet/minecraft/world/level/WorldGenLevel;setBlockAndUpdate(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z",
 					shift = At.Shift.AFTER
 			)
 	)
 	private void panda_afterStemSetBlock(
 			WorldGenLevel level,
 			RandomSource random,
-			HugeFungusConfiguration config,
 			BlockPos surfaceOrigin,
 			int totalHeight,
 			boolean isHuge,
@@ -49,7 +47,6 @@ public class HugeFungusGrowMixin {
 	private void panda_afterStemFeatureSetBlock(
 			WorldGenLevel level,
 			RandomSource random,
-			HugeFungusConfiguration config,
 			BlockPos surfaceOrigin,
 			int totalHeight,
 			boolean isHuge,
@@ -64,14 +61,13 @@ public class HugeFungusGrowMixin {
 			method = "placeHat",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/world/level/levelgen/feature/HugeFungusFeature;placeHatBlock(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/level/levelgen/feature/HugeFungusConfiguration;Lnet/minecraft/core/BlockPos$MutableBlockPos;FFF)V",
+					target = "Lnet/minecraft/world/level/levelgen/feature/HugeFungusFeature;placeHatBlock(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos$MutableBlockPos;FFF)V",
 					shift = At.Shift.AFTER
 			)
 	)
 	private void panda_afterPlaceHatBlock(
 			WorldGenLevel level,
 			RandomSource random,
-			HugeFungusConfiguration config,
 			BlockPos surfaceOrigin,
 			int totalHeight,
 			boolean isHuge,
@@ -86,14 +82,13 @@ public class HugeFungusGrowMixin {
 			method = "placeHat",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/world/level/levelgen/feature/HugeFungusFeature;placeHatDropBlock(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)V",
+					target = "Lnet/minecraft/world/level/levelgen/feature/HugeFungusFeature;placeHatDropBlock(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;Z)V",
 					shift = At.Shift.AFTER
 			)
 	)
 	private void panda_afterPlaceHatDropBlock(
 			WorldGenLevel level,
 			RandomSource random,
-			HugeFungusConfiguration config,
 			BlockPos surfaceOrigin,
 			int totalHeight,
 			boolean isHuge,

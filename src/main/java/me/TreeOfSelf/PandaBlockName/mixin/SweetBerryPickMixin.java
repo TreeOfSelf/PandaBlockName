@@ -20,17 +20,17 @@ public abstract class SweetBerryPickMixin {
 			method = "useWithoutItem",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/world/level/block/Block;dropFromBlockInteractLootTable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/item/ItemInstance;Lnet/minecraft/world/entity/Entity;Ljava/util/function/BiConsumer;)Z"
+					target = "Lnet/minecraft/world/level/block/Block;dropFromBlockInteractLootTable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/item/ItemInstance;Lnet/minecraft/world/entity/Entity;Ljava/util/function/BiConsumer;)Z"
 			)
 	)
 	private static void panda_sweetBerryArgs(Args args) {
 		if (!PandaBlockNameConfig.isVegetationFeatureEnabled("SweetBerryPicking")) {
 			return;
 		}
-		BlockEntity be = args.get(3);
+		BlockEntity be = args.get(4);
 		@SuppressWarnings("unchecked")
-		BiConsumer<ServerLevel, ItemStack> consumer = args.get(6);
-		args.set(6, (BiConsumer<ServerLevel, ItemStack>) (sl, stack) -> {
+		BiConsumer<ServerLevel, ItemStack> consumer = args.get(7);
+		args.set(7, (BiConsumer<ServerLevel, ItemStack>) (sl, stack) -> {
 			ComponentTransfer.itemFromBlockEntity(be, stack);
 			consumer.accept(sl, stack);
 		});

@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import me.TreeOfSelf.PandaBlockName.EndermanEntityAccess;
 import me.TreeOfSelf.PandaBlockName.PandaBlockNameConfig;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,12 +13,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(targets = "net.minecraft.world.entity.monster.EnderMan$EndermanTakeBlockGoal")
+@Mixin(targets = "net.minecraft.world.entity.monster.Enderman$EndermanTakeBlockGoal")
 public class EndermanPickUpMixin {
 
 	@Shadow
 	@Final
-	private EnderMan enderman;
+	private Enderman enderman;
 
 	@Inject(
 			method = "tick",
