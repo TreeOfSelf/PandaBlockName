@@ -37,7 +37,7 @@ public abstract class WorldChunkMixin {
 		if (state.hasBlockEntity()) {
 			existing.setRemoved();
 			this.getBlockEntities().remove(pos);
-		} else if (!state.is(this.getBlockState(pos).getBlock()) && this.level.getServer() != null && this.level.getServer().isSameThread()) {
+		} else if (StaleNames.isGone(state) && this.level.getServer() != null && this.level.getServer().isSameThread()) {
 			StaleNames.add(this.level, pos, existing);
 		}
 	}
