@@ -116,16 +116,7 @@ public class BlockDropMixin {
 						boolean newItemChanged = false;
 						if (blockEntity.components().has(DataComponents.CUSTOM_NAME)) {
 							newItem = item.copyWithCount(1);
-							Component customName = blockEntity.components().get(DataComponents.CUSTOM_NAME);
-							if (customName.getString().startsWith("{")) {
-								try {
-									JsonElement jsonElement = JsonParser.parseString(blockEntity.components().get(DataComponents.CUSTOM_NAME).getString());
-									DataResult<Pair<Component, JsonElement>> result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-									customName = result.getOrThrow().getFirst();
-								} catch (Exception ignored) {
-								}
-							}
-							newItem.set(DataComponents.CUSTOM_NAME, customName);
+							newItem.set(DataComponents.CUSTOM_NAME, blockEntity.components().get(DataComponents.CUSTOM_NAME));
 							newItemChanged = true;
 						}
 						if (blockEntity.components().has(DataComponents.LORE)) {
@@ -180,16 +171,7 @@ public class BlockDropMixin {
 			List<ItemStack> items = cir.getReturnValue();
 			if (blockEntity.components().has(DataComponents.CUSTOM_NAME)) {
 				for (ItemStack item : items) {
-					Component customName = blockEntity.components().get(DataComponents.CUSTOM_NAME);
-					if (customName.getString().startsWith("{")) {
-						try {
-							JsonElement jsonElement = JsonParser.parseString(blockEntity.components().get(DataComponents.CUSTOM_NAME).getString());
-							DataResult<Pair<Component, JsonElement>> result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-							customName = result.getOrThrow().getFirst();
-						} catch (Exception ignored) {
-						}
-					}
-					item.set(DataComponents.CUSTOM_NAME, customName);
+					item.set(DataComponents.CUSTOM_NAME, blockEntity.components().get(DataComponents.CUSTOM_NAME));
 				}
 			}
 			if (blockEntity.components().has(DataComponents.LORE)) {
