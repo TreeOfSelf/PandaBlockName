@@ -1,6 +1,7 @@
 package me.TreeOfSelf.PandaBlockName.mixin;
 
 import me.TreeOfSelf.PandaBlockName.EmptyBlockEntity;
+import me.TreeOfSelf.PandaBlockName.StaleNames;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,12 +32,13 @@ public abstract class WorldChunkMixin {
 
 	@Inject(method = "setBlockState", at = @At("HEAD"))
 	public void preSetBlockState(BlockPos pos, BlockState state, int flags, CallbackInfoReturnable<BlockState> cir) {
+		BlockEntity existing = this.getBlockEntities().get(pos);
+		if (!(existing instanceof EmptyBlockEntity)) return;
 		if (state.hasBlockEntity()) {
-			BlockEntity existing = this.getBlockEntities().get(pos);
-			if (existing instanceof EmptyBlockEntity) {
-				existing.setRemoved();
-				this.getBlockEntities().remove(pos);
-			}
+			existing.setRemoved();
+			this.getBlockEntities().remove(pos);
+		} else if (!state.is(this.getBlockState(pos).getBlock()) && this.level.getServer() != null && this.level.getServer().isSameThread()) {
+			StaleNames.add(this.level, pos, existing);
 		}
 	}
 
@@ -45,7 +47,10 @@ public abstract class WorldChunkMixin {
 		if (blockEntity instanceof EmptyBlockEntity) {
 			BlockPos blockPos = blockEntity.getBlockPos();
 			BlockState blockState = this.getBlockState(blockPos);
-			if (!blockState.hasBlockEntity()) {
+			// Never on air: also drops the ones older versions left behind on broken blocks, as their chunks load
+			if (blockState.isAir()) {
+				ci.cancel();
+			} else if (!blockState.hasBlockEntity()) {
 				blockEntity.setBlockState(blockState);
 				blockEntity.setLevel(this.level);
 				blockEntity.clearRemoved();
