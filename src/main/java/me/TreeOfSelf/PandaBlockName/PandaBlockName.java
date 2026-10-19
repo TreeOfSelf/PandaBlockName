@@ -2,6 +2,7 @@ package me.TreeOfSelf.PandaBlockName;
 
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -22,6 +23,7 @@ public class PandaBlockName implements ModInitializer {
 				FabricBlockEntityTypeBuilder.create(EmptyBlockEntity::new).build());
 
 		PolymerBlockUtils.registerBlockEntity(EMPTY_BLOCK_ENTITY_TYPE);
+		ServerTickEvents.END_SERVER_TICK.register(server -> StaleNames.flush());
 		PandaBlockNameConfig.loadConfig();
 		LOGGER.info("PandaBlockName started!");
 	}
